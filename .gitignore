@@ -1,0 +1,102 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyi
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Packaging / distribution
+build/
+dist/
+eggs/
+*.egg-info/
+*.egg
+*.whl
+.installed.cfg
+pip-wheel-metadata/
+
+# Testing / coverage
+htmlcov/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Static analysis / caches
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# C / C++ build artifacts
+# object files, libraries, executables
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.elf
+
+# linker, map, dependency files
+*.map
+*.d
+
+# Build dirs and intermediate files
+/build/
+bin/
+lib/
+lib64/
+obj/
+*.tmp
+*.log
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+compile_commands.json
+
+# Autotools
+config.log
+config.status
+configure
+autom4te.cache/
+ltmain.sh
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*~
+.DS_Store
+tags
+
+# Misc
+*.bak
+*.tmp
