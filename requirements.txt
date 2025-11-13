@@ -1,0 +1,6 @@
+# requirements.txt for Lab-muons
+numpy
+scipy
+pandas
+matplotlib
+iminuit
