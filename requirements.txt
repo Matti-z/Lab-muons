@@ -6,3 +6,4 @@ matplotlib
 iminuit
 plotly
 pathlib
+nbformat
