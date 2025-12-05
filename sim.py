@@ -9,7 +9,7 @@ import numpy as np
 
 N = 1e7
 L = 1e3
-z = 30
+z = 26
 
 H1 = 23
 H2 = 13
@@ -36,6 +36,11 @@ class muone:
         self.x = L*random() - L/2
         self.y = L*random() - L/2
         self.z = z
+
+
+        self.theta = np.pi * random()
+        self.phi = np.pi * random()
+
         if self.x > L/4:
             self.theta = random()*np.pi/2 + np.pi/2
         if self.y > L/4:
@@ -44,15 +49,14 @@ class muone:
             self.theta = random()*np.pi/2
         if self.y < -L/4:
             self.phi = random()*np.pi/2
-        self.theta = np.pi * random()
-        self.phi = np.pi * random()        
+         
         pass
 
 
 
 def projection( m , z):
-    dx = z / np.tan( m.theta )
-    dy = z / np.tan( m.phi)
+    dx = (m.z-z) / np.tan( m.theta )
+    dy = (m.z-z) / np.tan( m.phi)
     x1 = m.x + dx
     y1 = m.y + dy
     return x1 , y1
