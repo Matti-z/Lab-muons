@@ -1,7 +1,6 @@
 from random import *
 import numpy as np
 
-#TODO modificare la generazione degli angoli, vincolando la direzione in funzione delle coordinate
 #TODO al posto di montecarlo far andare un punto da +inf a -inf a step costanti e farlo andare diretto al centro del primo scintillatore
 
 #! modificare la generazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
@@ -38,18 +37,21 @@ class muone:
         self.z = z
 
 
+    def angle_gen( self , S:scintillatore = 0) :
+
         self.theta = np.pi * random()
         self.phi = np.pi * random()
 
-        if self.x > L/4:
-            self.theta = random()*np.pi/2 + np.pi/2
-        if self.y > L/4:
-            self.phi = random()*np.pi/2 + np.pi/2
-        if self.x < -L/4:
-            self.theta = random()*np.pi/2
-        if self.y < -L/4:
-            self.phi = random()*np.pi/2
-         
+
+        if S is scintillatore:
+            if self.x< S.x1:
+                self.theta = random()* np.arctan((self.z - S.z1)/( S.x1 - self.x))
+            if self.x > S.x2:
+                self.theta = random()* np.arctan((self.z - S.z1)/( S.x2 - self.x))
+            if self.y < S.y1:
+                self.phi = random()* np.arctan((self.z - S.z1)/( S.y1 - self.y))
+            if self.y > S.y2:
+                self.phi = random()* np.arctan((self.z - S.z1)/( S.y2 - self.y))
         pass
 
 
@@ -89,6 +91,11 @@ def intersection( m: muone , S: scintillatore):
 
     return (bool_x & bool_y)
 
+
+
+
+
+
 if __name__ == "__main__":
     n = 0
     P = scintillatore( 80 , 4 , 30)
@@ -104,6 +111,7 @@ if __name__ == "__main__":
 
     while( n < N):
         m = muone( L , z)
+        m.angle_gen( G )
         iG = intersection( m , G)
         iM = intersection( m , M)
         iP = intersection( m , P)
@@ -119,7 +127,7 @@ if __name__ == "__main__":
         string = "[" + "="*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)
         print("\r" + string, end="", flush=True)
         n+=1
-    
+    print("/n", triple/doppie)
 
 
 
