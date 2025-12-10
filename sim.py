@@ -46,7 +46,7 @@ class muone:
         self.theta = np.pi * random()
         self.phi = np.pi * random()
 
-        if S_b is scintillatore:
+        if type(S_b) is scintillatore:
             if self.x< S_b.x1:
                 self.theta = random()* np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) 
             if self.x > S_b.x2:
@@ -57,7 +57,7 @@ class muone:
                 self.phi = random()* np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))
 
 
-        # if S_b is scintillatore and S_t is scintillatore:
+        # if type(S_b) is scintillatore and type(S_t) is scintillatore:
         #     if self.x< S_b.x1:
         #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
         #     if self.x > S_b.x2:
@@ -103,10 +103,7 @@ def intersection( m: muone , S: scintillatore):
     elif y1 > S.y2:
         if y2 < S.y2:
             bool_y = True
-    print( S.z1 , S.z2 , S.name)
-    print( x1,x2 , S.x1 , S.x2 , bool_x)
-    print( y1,y2 , S.y1 , S.y2 , bool_y)
-    input()
+
 
 
     return (bool_x & bool_y)
