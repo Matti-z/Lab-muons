@@ -6,22 +6,23 @@ import numpy as np
 #! modificare la generazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
 
-N = 1e7
+N = 1e3
 L = 1e3
 z = 26
 
-H1_1 = 12.8
-H2_1 = 8.4
+Ha_1 = 12.8
+Hb_1 = 8.4
 
-H1_2 = 23
-H2_2 = 12.8
+Ha_2 = 23
+Hb_2 = 12.8
 
 
 class scintillatore:
-    def __init__(self , l , h , p):
+    def __init__(self , l , h , p , name = ""):
         self.l = l
         self.h = h
         self.p = p
+        self.name = name
         pass
 
     def position( self , x , y , z):
@@ -40,21 +41,31 @@ class muone:
         self.z = z
 
 
-    def angle_gen( self , S:scintillatore = 0) :
+    def angle_gen( self , S_b:scintillatore = 0 , S_t: scintillatore = 0) :
 
         self.theta = np.pi * random()
         self.phi = np.pi * random()
 
+        if S_b is scintillatore:
+            if self.x< S_b.x1:
+                self.theta = random()* np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) 
+            if self.x > S_b.x2:
+                self.theta = random()* np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x))
+            if self.y < S_b.y1:
+                self.phi = random()* np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))
+            if self.y > S_b.y2:
+                self.phi = random()* np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))
 
-        if S is scintillatore:
-            if self.x< S.x1:
-                self.theta = random()* np.arctan((self.z - S.z1)/( S.x1 - self.x))
-            if self.x > S.x2:
-                self.theta = random()* np.arctan((self.z - S.z1)/( S.x2 - self.x))
-            if self.y < S.y1:
-                self.phi = random()* np.arctan((self.z - S.z1)/( S.y1 - self.y))
-            if self.y > S.y2:
-                self.phi = random()* np.arctan((self.z - S.z1)/( S.y2 - self.y))
+
+        # if S_b is scintillatore and S_t is scintillatore:
+        #     if self.x< S_b.x1:
+        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
+        #     if self.x > S_b.x2:
+        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))
+        #     if self.y < S_b.y1:
+        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.y2 - self.x))
+        #     if self.y > S_b.y2:
+        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.y1 - self.x))
         pass
 
 
@@ -73,24 +84,30 @@ def intersection( m: muone , S: scintillatore):
     x1,y1 = projection( m , S.z1)
     x2,y2 = projection( m , S.z2)
 
+    
+
     if x1 < S.x1:
         if x2 > S.x1:
             bool_x = True
-    elif x1 < S.x2:
+    elif x1 <= S.x2:
         bool_x = True
-    if x1 > S.x2:
+    elif x1 > S.x2:
         if x2 < S.x2:
             bool_x = True
     
     if y1 < S.y1:
         if y2 > S.y1:
             bool_y = True
-    elif y1 < S.y2:
+    elif y1 <= S.y2:
         bool_y = True
-    if y1 > S.y2:
+    elif y1 > S.y2:
         if y2 < S.y2:
             bool_y = True
-    
+    print( S.z1 , S.z2 , S.name)
+    print( x1,x2 , S.x1 , S.x2 , bool_x)
+    print( y1,y2 , S.y1 , S.y2 , bool_y)
+    input()
+
 
     return (bool_x & bool_y)
 
@@ -108,36 +125,42 @@ if __name__ == "__main__":
 #---------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------
     n = 0
-    P = scintillatore( 80 , 4 , 30)
-    G = scintillatore( 80 , 4 , 30)
-    M = scintillatore( 80 , 1 , 30)
+    G = scintillatore( 80 , 3 , 30 , "Giunone")
+    M = scintillatore( 80 , 1 , 30 , "Minerva")
+    P = scintillatore( 80 , 3 , 30 , "Partenope")
 
     G.position( 0 , 0 , 0)
-    P.position( 0 , 0 , H1_2)
-    M.position( 0 , 0 , H2_2)
+    M.position( 0 , 0 , Hb_2)
+    P.position( 0 , 0 , Ha_2)
 
     doppie = 0
     triple = 0
+    flag = 0
 
     while( n < N):
         m = muone( L , z)
-        m.angle_gen( G )
+        m.angle_gen( G , P)
         iG = intersection( m , G)
         iM = intersection( m , M)
         iP = intersection( m , P)
 
+        del m
+
+        if iM | iG | iP:
+            flag+=1
         if iM & iG:
             doppie += 1
-        if (iP & iM) & iG:
+        if iP & iM & iG:
             triple +=1
 
 
         perc = int(np.round(n/N * 20))
 
-        string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)
-        print("\r" + string, end="", flush=True)
+        string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)+"\t\t"+ str(flag)
+        #print("\r" + string, end="", flush=True)
         n+=1
-    print("\n configurazione PMG\t", triple/doppie)
+    #print("\n configurazione PMG\t", triple/doppie)
+    print( flag , "\n")
 
 #---------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------
@@ -145,24 +168,28 @@ if __name__ == "__main__":
 #---------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------
     n = 0
-    P = scintillatore( 80 , 4 , 30)
-    G = scintillatore( 80 , 4 , 30)
-    M = scintillatore( 80 , 2 , 30)
+    P = scintillatore( 80 , 3 , 30 , "Partenope")
+    G = scintillatore( 80 , 3 , 30 , "Giunone")
+    M = scintillatore( 80 , 1 , 30 , "Minerva")
 
     G.position( 0 , 0 , 0)
-    P.position( 0 , 0 , H2_2)
-    M.position( 0 , 0 , H1_2)
+    P.position( 0 , 0 , Hb_2)
+    M.position( 0 , 0 , Ha_2)
 
+    flag = 0
     doppie = 0
     triple = 0
 
     while( n < N):
         m = muone( L , z)
-        m.angle_gen( G )
+        m.angle_gen( G , M)
         iG = intersection( m , G)
-        iM = intersection( m , M)
         iP = intersection( m , P)
+        iM = intersection( m , M)
 
+        del m
+        if iM | iG | iP:
+            flag+=1
         if iG & iP:
             doppie += 1
         if (iP & iM) & iG:
@@ -172,9 +199,10 @@ if __name__ == "__main__":
         perc = int(np.round(n/N * 20))
 
         string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)
-        print("\r" + string, end="", flush=True)
+        #print("\r" + string, end="", flush=True)
         n+=1
-    print(" \n configurazione MPG: \t", triple/doppie)
+    #print(" \n configurazione MPG: \t", triple/doppie)
+    print( flag , "\n")
 
 
 
