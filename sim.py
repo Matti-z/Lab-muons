@@ -10,8 +10,11 @@ N = 1e7
 L = 1e3
 z = 26
 
-H1 = 23
-H2 = 13
+H1_1 = 12.8
+H2_1 = 8.4
+
+H1_2 = 23
+H2_2 = 12.8
 
 
 class scintillatore:
@@ -97,14 +100,21 @@ def intersection( m: muone , S: scintillatore):
 
 
 if __name__ == "__main__":
+
+
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
     n = 0
     P = scintillatore( 80 , 4 , 30)
     G = scintillatore( 80 , 4 , 30)
-    M = scintillatore( 80 , 2 , 30)
+    M = scintillatore( 80 , 1 , 30)
 
     G.position( 0 , 0 , 0)
-    P.position( 0 , 0 , H1)
-    M.position( 0 , 0 , H2)
+    P.position( 0 , 0 , H1_2)
+    M.position( 0 , 0 , H2_2)
 
     doppie = 0
     triple = 0
@@ -116,18 +126,55 @@ if __name__ == "__main__":
         iM = intersection( m , M)
         iP = intersection( m , P)
 
-        if iM & iP:
+        if iM & iG:
             doppie += 1
         if (iP & iM) & iG:
             triple +=1
 
 
         perc = int(np.round(n/N * 20))
-        #string = "[" + "="*perc + "-"*(20 - perc) + "]" + "\tratio: " + (str((triple/doppie)*100) if doppie != 0 else "0") +  "%\t"+ str(doppie) +"\t/"+str(triple)
-        string = "[" + "="*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)
+
+        string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)
         print("\r" + string, end="", flush=True)
         n+=1
-    print("/n", triple/doppie)
+    print("\n configurazione PMG\t", triple/doppie)
+
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+    n = 0
+    P = scintillatore( 80 , 4 , 30)
+    G = scintillatore( 80 , 4 , 30)
+    M = scintillatore( 80 , 2 , 30)
+
+    G.position( 0 , 0 , 0)
+    P.position( 0 , 0 , H2_2)
+    M.position( 0 , 0 , H1_2)
+
+    doppie = 0
+    triple = 0
+
+    while( n < N):
+        m = muone( L , z)
+        m.angle_gen( G )
+        iG = intersection( m , G)
+        iM = intersection( m , M)
+        iP = intersection( m , P)
+
+        if iG & iP:
+            doppie += 1
+        if (iP & iM) & iG:
+            triple +=1
+
+
+        perc = int(np.round(n/N * 20))
+
+        string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)
+        print("\r" + string, end="", flush=True)
+        n+=1
+    print(" \n configurazione MPG: \t", triple/doppie)
 
 
 
