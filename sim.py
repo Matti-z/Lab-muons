@@ -16,6 +16,9 @@ Hb_1 = 8.4
 Ha_2 = 23
 Hb_2 = 12.8
 
+Ha_3 = 25.3
+Hb_3 = 12.8
+
 
 class scintillatore:
     def __init__(self , l , h , p , name = ""):
