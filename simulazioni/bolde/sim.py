@@ -6,7 +6,7 @@ import numpy as np
 #! modificare la generazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
 
-N = 1e7
+N = 1e5
 L = 1e2
 z = 26
 
@@ -81,7 +81,7 @@ def intersection( m: muone , S: scintillatore):
     if x1 < S.x1:
         if x2 > S.x1:
             bool_x = True
-    elif x1 <= S.x2:
+    elif (x1 <= S.x2) and (x1 >= S.x1):
         bool_x = True
     elif x1 > S.x2:
         if x2 < S.x2:
@@ -90,7 +90,7 @@ def intersection( m: muone , S: scintillatore):
     if y1 < S.y1:
         if y2 > S.y1:
             bool_y = True
-    elif y1 <= S.y2:
+    elif (y1 <= S.y2) and (y1 >= S.y1):
         bool_y = True
     elif y1 > S.y2:
         if y2 < S.y2:
