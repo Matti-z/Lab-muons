@@ -6,8 +6,8 @@ import numpy as np
 #! modificare la generazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
 
-N = 1e3
-L = 1e3
+N = 1e7
+L = 1e2
 z = 26
 
 Ha_1 = 12.8
@@ -49,26 +49,15 @@ class muone:
         self.theta = np.pi * random()
         self.phi = np.pi * random()
 
-        if type(S_b) is scintillatore:
+        if type(S_b) is scintillatore and type(S_t) is scintillatore:
             if self.x< S_b.x1:
-                self.theta = random()* np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) 
+                self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
             if self.x > S_b.x2:
-                self.theta = random()* np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x))
+                self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))
             if self.y < S_b.y1:
-                self.phi = random()* np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))
+                self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))
             if self.y > S_b.y2:
-                self.phi = random()* np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))
-
-
-        # if type(S_b) is scintillatore and type(S_t) is scintillatore:
-        #     if self.x< S_b.x1:
-        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
-        #     if self.x > S_b.x2:
-        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))
-        #     if self.y < S_b.y1:
-        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.y2 - self.x))
-        #     if self.y > S_b.y2:
-        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.y1 - self.x))
+                self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))
         pass
 
 
@@ -112,18 +101,7 @@ def intersection( m: muone , S: scintillatore):
     return (bool_x & bool_y)
 
 
-
-
-
-
-if __name__ == "__main__":
-
-
-#---------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------
+def sim():
     n = 0
     G = scintillatore( 80 , 3 , 30 , "Giunone")
     M = scintillatore( 80 , 1 , 30 , "Minerva")
@@ -157,10 +135,56 @@ if __name__ == "__main__":
         perc = int(np.round(n/N * 20))
 
         string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)+"\t\t"+ str(flag)
-        #print("\r" + string, end="", flush=True)
+        print("\r" + string, end="", flush=True)
         n+=1
-    #print("\n configurazione PMG\t", triple/doppie)
-    print( flag , "\n")
+    return doppie , triple , flag
+
+
+
+if __name__ == "__main__":
+
+
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------
+    n = 0
+    G = scintillatore( 80 , 3 , 30 , "Giunone")
+    M = scintillatore( 80 , 1 , 30 , "Minerva")
+    P = scintillatore( 80 , 3 , 30 , "Partenope")
+
+    G.position( 0 , 0 , 0)
+    M.position( 0 , 0 , Hb_2)
+    P.position( 0 , 0 , Ha_2)
+
+    doppie = 0
+    triple = 0
+    flag = 0
+
+    while( n < N):
+        m = muone( L , z)
+        m.angle_gen( G , P)
+        iG = intersection( m , G)
+        iM = intersection( m , M)
+        iP = intersection( m , P)
+
+
+        if iM | iG | iP:
+            flag+=1
+        if iM & iG:
+            doppie += 1
+        if iP & iM & iG:
+            triple +=1
+
+
+        perc = int(np.round(n/N * 20))
+
+        string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)+"\t\t"+ str(flag)
+        print("\r" + string, end="", flush=True)
+        n+=1
+    print("\n configurazione PMG\t", triple/doppie)
+    # print( flag , "\n")
 
 #---------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------
@@ -188,6 +212,7 @@ if __name__ == "__main__":
         iM = intersection( m , M)
 
         del m
+
         if iM | iG | iP:
             flag+=1
         if iG & iP:
@@ -199,10 +224,10 @@ if __name__ == "__main__":
         perc = int(np.round(n/N * 20))
 
         string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)
-        #print("\r" + string, end="", flush=True)
+        print("\r" + string, end="", flush=True)
         n+=1
-    #print(" \n configurazione MPG: \t", triple/doppie)
-    print( flag , "\n")
+    print(" \n configurazione MPG: \t", triple/doppie)
+    # print( flag , "\n")
 
 
 
