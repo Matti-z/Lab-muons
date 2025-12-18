@@ -3,7 +3,7 @@ import numpy as np
 
 #TODO al posto di montecarlo far andare un punto da +inf a -inf a step costanti e farlo andare diretto al centro del primo scintillatore
 
-#! modificare la generazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
+#! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
 
 N = 1e7
@@ -44,7 +44,7 @@ class muone:
         self.z = z
 
 
-    def angle_gen( self , S_b:scintillatore = 0 , S_t: scintillatore = 0) :
+    def angle_generation( self , S_b:scintillatore = 0 , S_t: scintillatore = 0) :
 
         self.theta = np.pi * random()
         self.phi = np.pi * random()
@@ -81,7 +81,7 @@ def intersection( m: muone , S: scintillatore):
     if x1 < S.x1:
         if x2 > S.x1:
             bool_x = True
-    elif x1 <= S.x2:
+    elif (x1 <= S.x2) and (x1 >= S.x1):
         bool_x = True
     elif x1 > S.x2:
         if x2 < S.x2:
@@ -90,54 +90,73 @@ def intersection( m: muone , S: scintillatore):
     if y1 < S.y1:
         if y2 > S.y1:
             bool_y = True
-    elif y1 <= S.y2:
+    elif (y1 <= S.y2) and (y1 >= S.y1):
         bool_y = True
     elif y1 > S.y2:
         if y2 < S.y2:
             bool_y = True
 
 
-
     return (bool_x & bool_y)
 
 
-def sim():
-    n = 0
-    G = scintillatore( 80 , 3 , 30 , "Giunone")
-    M = scintillatore( 80 , 1 , 30 , "Minerva")
-    P = scintillatore( 80 , 3 , 30 , "Partenope")
 
-    G.position( 0 , 0 , 0)
-    M.position( 0 , 0 , Hb_2)
-    P.position( 0 , 0 , Ha_2)
+def sim(
+    bot_pos: tuple[float, float, float],
+    top_pos: tuple[float, float, float],
+    middle_pos: tuple[float, float, float],
+    thin_position: int = 1,  # 0=bottom, 1=middle, 2=top
+    bot_name: str = "Giunone",
+    top_name: str = "Minerva",
+    middle_name: str = "Partenope"
+) -> tuple[int, int, int]:
+    n: int = 0
+    # Set thickness: 1 for thin, 3 for thick
+    thicknesses: list[int] = [3, 3, 3]
+    if thin_position == 0:
+        thicknesses[0] = 1
+    elif thin_position == 1:
+        thicknesses[1] = 1
+    elif thin_position == 2:
+        thicknesses[2] = 1
 
-    doppie = 0
-    triple = 0
-    flag = 0
+    bot_scintillator: scintillatore = scintillatore(80, thicknesses[0], 30, bot_name)
+    top_scintillator: scintillatore = scintillatore(80, thicknesses[2], 30, top_name)
+    middle_scintillator: scintillatore = scintillatore(80, thicknesses[1], 30, middle_name)
 
-    while( n < N):
-        m = muone( L , z)
-        m.angle_gen( G , P)
-        iG = intersection( m , G)
-        iM = intersection( m , M)
-        iP = intersection( m , P)
+    bot_scintillator.position(*bot_pos)
+    top_scintillator.position(*top_pos)
+    middle_scintillator.position(*middle_pos)
+
+    doppie: int = 0
+    triple: int = 0
+    flag: int = 0
+
+    while n < N:
+        m: muone = muone(L, z)
+        m.angle_generation(bot_scintillator, middle_scintillator)
+        flag_B: bool = intersection(m, bot_scintillator)
+        flag_T: bool = intersection(m, top_scintillator)
+        flag_M: bool = intersection(m, middle_scintillator)
 
         del m
 
-        if iM | iG | iP:
-            flag+=1
-        if iM & iG:
+        if flag_T | flag_B | flag_M:
+            flag += 1
+        if flag_T & flag_M:
             doppie += 1
-        if iP & iM & iG:
-            triple +=1
+        if flag_M & flag_T & flag_B:
+            triple += 1
 
+        perc: int = int(np.round(n / N * 20))
 
-        perc = int(np.round(n/N * 20))
-
-        string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)+"\t\t"+ str(flag)
+        string: str = (
+            "[" + "#" * perc + "-" * (20 - perc) + "]\t"
+            + str(triple) + "/" + str(doppie) + "\t\t" + str(flag)
+        )
         print("\r" + string, end="", flush=True)
-        n+=1
-    return doppie , triple , flag
+        n += 1
+    return doppie, triple, flag
 
 
 
@@ -164,7 +183,7 @@ if __name__ == "__main__":
 
     while( n < N):
         m = muone( L , z)
-        m.angle_gen( G , P)
+        m.angle_generation( G , P)
         iG = intersection( m , G)
         iM = intersection( m , M)
         iP = intersection( m , P)
@@ -183,8 +202,8 @@ if __name__ == "__main__":
         string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)+"\t\t"+ str(flag)
         print("\r" + string, end="", flush=True)
         n+=1
-    print("\n configurazione PMG\t", triple/doppie)
-    # print( flag , "\n")
+    print("\n confibot_scintillatorurazione PMbot_scintillator\t", triple/doppie)
+    # print( flabot_scintillator , "\n")
 
 #---------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------
@@ -193,7 +212,7 @@ if __name__ == "__main__":
 #---------------------------------------------------------------------------------------------------------
     n = 0
     P = scintillatore( 80 , 3 , 30 , "Partenope")
-    G = scintillatore( 80 , 3 , 30 , "Giunone")
+    G = scintillatore( 80 , 3 , 30 , "bot_scintillatoriunone")
     M = scintillatore( 80 , 1 , 30 , "Minerva")
 
     G.position( 0 , 0 , 0)
@@ -206,7 +225,7 @@ if __name__ == "__main__":
 
     while( n < N):
         m = muone( L , z)
-        m.angle_gen( G , M)
+        m.angle_generation( G , M)
         iG = intersection( m , G)
         iP = intersection( m , P)
         iM = intersection( m , M)
@@ -226,8 +245,8 @@ if __name__ == "__main__":
         string = "[" + "#"*perc + "-"*(20 - perc) + "]\t" + str(triple) +"/"+str(doppie)
         print("\r" + string, end="", flush=True)
         n+=1
-    print(" \n configurazione MPG: \t", triple/doppie)
-    # print( flag , "\n")
+    print(" \n confibot_scintillatorurazione MPbot_scintillator: \t", triple/doppie)
+    # print( flabot_scintillator , "\n")
 
 
 
