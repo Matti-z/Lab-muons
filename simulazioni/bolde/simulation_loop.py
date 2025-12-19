@@ -42,9 +42,9 @@ if __name__ == "__main__":
     fieldnames = ['configuration', 'coordinates[TtB][x,y,z]', 'doppie', 'triple', 'flag']
 
     # Write header once at the start
+    # Write header once at the start
     with open(csv_file, mode='w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
+        f.write(','.join(fieldnames) + '\n')
 
     for config in xyz_array:
         thin_pos = 1
@@ -53,14 +53,13 @@ if __name__ == "__main__":
             thin_pos = 2
             configuration = ["m", "p/g", "g/p"]
         doppie, triple, flag = sim((config[2]), (config[1]), (config[0]), thin_pos, *configuration)
-        row = {
-            'configuration': ' '.join(configuration),
-            'coordinates': config,
-            'doppie': doppie,
-            'triple': triple,
-            'flag': flag
-        }
+        row = [
+            ' '.join(configuration),
+            str(config),
+            str(doppie),
+            str(triple),
+            str(flag)
+        ]
         # Append each row after simulation
         with open(csv_file, mode='a', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writerow(row)
+            f.write(','.join(row) + '\n')
