@@ -6,7 +6,7 @@ import numpy as np
 #! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
 
-N = 1e5
+N = 1e8
 L = 1e2
 z = 26
 
