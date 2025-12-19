@@ -49,15 +49,15 @@ class muone:
         self.theta = np.pi * random()
         self.phi = np.pi * random()
 
-        if type(S_b) is scintillatore and type(S_t) is scintillatore:
-            if self.x< S_b.x1:
-                self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
-            if self.x > S_b.x2:
-                self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))
-            if self.y < S_b.y1:
-                self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))
-            if self.y > S_b.y2:
-                self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))
+        # if type(S_b) is scintillatore and type(S_t) is scintillatore:
+        #     if self.x< S_b.x1:
+        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
+        #     if self.x > S_b.x2:
+        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))
+        #     if self.y < S_b.y1:
+        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))
+        #     if self.y > S_b.y2:
+        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))
         pass
 
 
