@@ -13,7 +13,7 @@ def xml_digitizer_parser(path:str = "")->list:
 
     if not isfile(path):
         raise FileNotFoundError(f"XML file not found: {path}")
-    tree = parse("prova_xml.xml")
+    tree = parse(path)
     root = tree.getroot()
 
     events = []
