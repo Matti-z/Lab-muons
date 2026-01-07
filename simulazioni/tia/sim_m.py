@@ -43,47 +43,67 @@ def intersec(m, s, theta_d, phi_d, upper_or_lower):
         z_defined = s.upper_z
     else:
         raise ValueError("upper_or_lower must be 'lower' or 'upper'")
-    delta_z = z_0 - z_defined
+    delta_z =abs( z_0 - z_defined)
     y_prime = y_0 + delta_z * np.tan(theta_d)
     x_prime = x_0 + delta_z * np.tan(phi_d)
-    dist_max_scint = np.sqrt(z_defined**2 + s.right_y**2 + s.pos_x**2)
-    dist_prime = np.sqrt(x_prime**2 + y_prime**2 + z_defined**2 )
+    dist_max_scint = np.sqrt(s.right_y**2 + s.pos_x**2)
+    dist_prime = np.sqrt(x_prime**2 + y_prime**2)
     # if dist_prime > dist_max_scint:
     #     return x_prime, y_prime, z_defined, False
     if dist_prime <= dist_max_scint:
-        if np.abs(s.right_y)/2 >= np.abs(y_prime) and np.abs(s.pos_x)/2 >= np.abs(x_prime):
+        if np.abs(s.right_y) >= np.abs(y_prime) and np.abs(s.pos_x) >= np.abs(x_prime):
             # print('intersezione piano superiore/inferiore con lo scintillatore')
             pos += 1
         if np.abs(s.right_y) < np.abs(y_prime) or np.abs(s.pos_x) < np.abs(x_prime):
-            return x_prime, y_prime, z_defined, 0, 0
-    if y_prime >= 0:
-        r_y = (y_prime - s.left_y) / np.sin(theta_d)
-    if y_prime < 0:
-        r_y = (y_prime - s.right_y) / np.sin(theta_d)
-    if x_prime >= 0:
-        r_x = (x_prime - s.neg_x) / np.sin(phi_d)
-    if x_prime < 0:
-        r_x = (x_prime - s.pos_x) / np.sin(phi_d)
-    r = np.sqrt(r_x**2 + r_y**2)
-    return x_prime, y_prime, z_defined, r, pos
+            pos = 0
+    r_x_prime = (abs(s.pos_x) - abs(x_prime))/ np.sin(phi_d)
+    r_y_prime = (abs(s.right_y) - abs(y_prime))/ np.sin(theta_d)
+    # r= np.sqrt((r_x_prime**2 + (r_y_prime * np.sin(theta_d))**2))
+    # print(x_prime, y_prime, z_defined, r, r_prime, pos)
+    return x_prime, y_prime, z_defined, pos
+
+
+#restituisce proiezione sul piano distanza in scintillatore se il muone passa solo sopra
+#funziona bene anche se passa su lato sotto, basta scambiare nella seguente funzione x e x_
+def casi_una_faccia(x, x_, l_mezzi): ##i valori passati non devono essere in modulo! (solo l_mezzi nel caso)
+    if (abs(x_) + abs(x) > abs(l_mezzi)) and (x * x_ >= 0):
+        return abs(l_mezzi) - abs(x)
+    elif (abs(x_) <= abs(l_mezzi)) and (abs(x_) > abs(x)):
+        return abs(x_) - abs(x)    
+    elif (abs(x_) < abs(x)) and (x * x_ >= 0):
+        return abs(x) - abs(x_)
+    elif (x * x_ < 0) and (abs(x_) < abs (l_mezzi)):
+        return abs(x_) + abs(x)
+    elif (x * x_ < 0) and (abs(x_) >= abs (l_mezzi)):
+        return abs(l_mezzi) + abs(x)    
+    
 
 def scint_interaction(m, s1, theta_d, phi_d, lim_r_scint = 1.5): 
     #verifico se il muone interseca lo scintillatore, dati due angoli di deviazione theta_d e phi_d
     #sopra e sotto, sopra e di lato, sotto e di lato
-    x, y, z, r, n_up_prov = intersec(m, s1, theta_d, phi_d, 'upper')
-    x_, y_, z_, r_, n_down_prov = intersec(m, s1, theta_d, phi_d, 'lower')
+    x, y, z, n_up_prov = intersec(m, s1, theta_d, phi_d, 'upper')
+    x_, y_, z_, n_down_prov = intersec(m, s1, theta_d, phi_d, 'lower')
     s_e_s = 0
     s_e_l = 0
     l_e_s = 0
+    r = 0
     if (n_up_prov == 1 and n_down_prov == 1):
         # print('passa sia up che down')
         s_e_s += 1
     if (n_up_prov == 1 and n_down_prov == 0):
-        print('passa solo up, distanza percorsa: ', r)
+        rx = casi_una_faccia(x, x_, s1.pos_x)
+        ry = casi_una_faccia(y, y_, s1.right_y)
+        r = np.sqrt(rx**2 + (ry * np.sin(theta_d))**2)
+        # print('passa solo up, distanza percorsa: ', r)
+        if (r > (np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2))): print(f'ERROR!!!! r (={r}) > r_max (={np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2)}), sgravato sopra,', r)
         if r > lim_r_scint:
             s_e_l += 1 
     if (n_up_prov == 0 and n_down_prov == 1):
-        print('passa solo down, distanza percorsa: ', r_)
+        rx = casi_una_faccia(x_, x, s1.pos_x)
+        ry = casi_una_faccia(y_, y, s1.right_y)
+        r_ = np.sqrt(rx**2 + (ry * np.sin(theta_d))**2)
+        # print('passa solo down, distanza percorsa: ', r_)
+        if (r > (np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2))): print(f'ERROR!!!! r (={r}) > r_max (={np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2)}), sgravato sotto,', r)
         if r_ > lim_r_scint:
             l_e_s += 1 
     return s_e_s, s_e_l, l_e_s
@@ -138,7 +158,7 @@ def sample_cos2(N):
     """
     Samples x over [-pi/2, pi/2] with density ∝ cos^2(x).
     """
-    u = np.random.rand(N)
+    u = np.random.rand(N)[0]
     return jack_cdf(u)
 
 
@@ -146,12 +166,13 @@ def sample_cos2(N):
 if __name__ == '__main__':
     triple = 0
     doppie = 0
-    n = 0
+    numero_che_voglio = 99999 #numero di scintillazioni che voglio
+    t = 0
     m = 0
     d = 0
     n_up = 0
     n_down = 0
-    while doppie <= 9:
+    while doppie <= numero_che_voglio:
         theta_d = sample_cos2(1)
         phi_d = sample_cos2(1)
         m = muon(np.random.uniform(43., 50.), np.random.uniform(0, np.pi/2), 
@@ -162,10 +183,10 @@ if __name__ == '__main__':
         n_up += n
         n_down += m
         doppie += d
-        n += 1
+        t += 1
         # print(s1.right_y, s1.left_y, s1.pos_x, s1.neg_x, s1.upper_z, s1.lower_z)
         # print(f'distanza percora in scintillatore: {r}, {r_}')
-    print(f'Number of muons generated to get 10000 conteggi up: {n}')
+    print(f'Number of muons generated to get {numero_che_voglio + 1} conteggi up: {t}')
     print(f'number of n_up: {n_up}, number of n_down: {n_down}')
     print('numero di doppie: ', doppie)
     
