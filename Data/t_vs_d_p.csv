@@ -1,5 +1,0 @@
-p_tensione[V],g_tensione[V],m_tensione[V],p_threshold[mV],g_threshold[mV],m_threshold[mV],m_count,pg_doppie,pgm_triple,mg_doppie
-880,1050,1200,178,166,40,,4303,2978,3024
-880,1050,1200,180,166,40,3468,4208,2302,2334
-880,1050,1200,,166,40,,,,
-880,1050,1200,,166,40,,,,
