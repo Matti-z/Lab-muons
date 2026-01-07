@@ -56,10 +56,6 @@ def intersec(m, s, theta_d, phi_d, upper_or_lower):
             pos += 1
         if np.abs(s.right_y) < np.abs(y_prime) or np.abs(s.pos_x) < np.abs(x_prime):
             pos = 0
-    r_x_prime = (abs(s.pos_x) - abs(x_prime))/ np.sin(phi_d)
-    r_y_prime = (abs(s.right_y) - abs(y_prime))/ np.sin(theta_d)
-    # r= np.sqrt((r_x_prime**2 + (r_y_prime * np.sin(theta_d))**2))
-    # print(x_prime, y_prime, z_defined, r, r_prime, pos)
     return x_prime, y_prime, z_defined, pos
 
 
@@ -68,7 +64,7 @@ def intersec(m, s, theta_d, phi_d, upper_or_lower):
 def casi_una_faccia(x, x_, l_mezzi): ##i valori passati non devono essere in modulo! (solo l_mezzi nel caso)
     if (abs(x_) + abs(x) > abs(l_mezzi)) and (x * x_ >= 0):
         return abs(l_mezzi) - abs(x)
-    elif (abs(x_) <= abs(l_mezzi)) and (abs(x_) > abs(x)):
+    elif (abs(x_) <= abs(l_mezzi)) and (abs(x_) > abs(x)) and (x * x_ >= 0):
         return abs(x_) - abs(x)    
     elif (abs(x_) < abs(x)) and (x * x_ >= 0):
         return abs(x) - abs(x_)
@@ -95,7 +91,9 @@ def scint_interaction(m, s1, theta_d, phi_d, lim_r_scint = 1.5):
         ry = casi_una_faccia(y, y_, s1.right_y)
         r = np.sqrt(rx**2 + (ry * np.sin(theta_d))**2)
         # print('passa solo up, distanza percorsa: ', r)
-        if (r > (np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2))): print(f'ERROR!!!! r (={r}) > r_max (={np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2)}), sgravato sopra,', r)
+        if (r > (np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2))): 
+            print(f'ERROR!!!! r (={r}) > r_max (={np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2)}), sgravato sopra')
+            print(f'x: {x}, x_: {x_}, y: {y}, y_: {y_}, rx: {rx}, ry: {ry}, theta_d: {theta_d}')
         if r > lim_r_scint:
             s_e_l += 1 
     if (n_up_prov == 0 and n_down_prov == 1):
@@ -103,13 +101,34 @@ def scint_interaction(m, s1, theta_d, phi_d, lim_r_scint = 1.5):
         ry = casi_una_faccia(y_, y, s1.right_y)
         r_ = np.sqrt(rx**2 + (ry * np.sin(theta_d))**2)
         # print('passa solo down, distanza percorsa: ', r_)
-        if (r > (np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2))): print(f'ERROR!!!! r (={r}) > r_max (={np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2)}), sgravato sotto,', r)
+        if (r > (np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2))): print(f'ERROR!!!! r (={r}) > r_max (={np.sqrt(s1.right_y**2 + s1.pos_x**2+ s1.upper_z**2)}), sgravato sotto')
         if r_ > lim_r_scint:
             l_e_s += 1 
     return s_e_s, s_e_l, l_e_s
 
-
-
+def coin_2_scint(muon, scint_up, scint_down, theta_d, phi_d): ##per fare coincidenze a due scintillatori
+    d, n, m = scint_interaction(muon, s1, theta_d, phi_d, lim_r_scint = 1.5)
+    d_, n_, m_ = scint_interaction(muon, s2, theta_d, phi_d, lim_r_scint = 1.5)
+    if (d + d_ + n + n_ + m + m_) == 2 :
+        return True
+    elif (d + d_ + n + n_ + m + m_) < 2 :
+        return False
+    elif (d + d_ + n + n_ + m + m_) > 2 :
+        print('ERRORE! piu di due scintillatori attivati!')
+        return False
+    
+def coin_3_scint(muon, scint_up, scint_mid, scint_down, theta_d, phi_d): ##per fare coincidenze a tre scintillatori
+    d, n, m = scint_interaction(muon, s1, theta_d, phi_d, lim_r_scint = 1.5)
+    d_, n_, m_ = scint_interaction(muon, s2, theta_d, phi_d, lim_r_scint = 1.5)
+    d__, n__, m__ = scint_interaction(muon, s3, theta_d, phi_d, lim_r_scint = 1.5)
+    if (d + d_ + d__ + n + n_ + n__ + m + m_ + m__) == 3 :
+        return True
+    elif (d + d_ + d__ + n + n_ + n__ + m + m_ + m__) < 3 :
+        return False
+    elif (d + d_ + d__ + n + n_ + n__ + m + m_ + m__) > 3 :
+        print('ERRORE! piu di tre scintillatori attivati!')
+        return False
+    
 def muon_angle_distribution():
     """Sample (theta, phi) with angular distribution per unit solid angle ∝ cos^2(theta).
 
@@ -166,30 +185,46 @@ def sample_cos2(N):
 if __name__ == '__main__':
     triple = 0
     doppie = 0
-    numero_che_voglio = 99999 #numero di scintillazioni che voglio
+    doppie_um = 0
+    doppie_ml = 0
+    numero_che_voglio = 999999 #numero di scintillazioni che voglio
     t = 0
-    m = 0
     d = 0
-    n_up = 0
-    n_down = 0
+    d_um = 0
+    d_ml = 0
+    n = 0
+    s1 = scint(np.sqrt(15**2+40**2+(3.8/2)**2), np.arccos(3.8/(2*np.sqrt(15**2+40**2+(3.8/2)**2))), 
+                   np.arctan2(40, 15), 3.8/2)
+    s2 = scint(np.sqrt(15**2+40**2+(3.8/2)**2), np.arccos(3.8/(2*np.sqrt(15**2+40**2+(3.8/2)**2))), 
+                   np.arctan2(40, 15), 8.4+(3.8/2))
+    s3 = scint(np.sqrt(15**2+40**2+(3.8/2)**2), np.arccos(3.8/(2*np.sqrt(15**2+40**2+(3.8/2)**2))), 
+                   np.arctan2(40, 15), 12.8+(3.8/2))
     while doppie <= numero_che_voglio:
         theta_d = sample_cos2(1)
         phi_d = sample_cos2(1)
         m = muon(np.random.uniform(43., 50.), np.random.uniform(0, np.pi/2), 
                  np.random.uniform(0, np.pi * 2))
-        s1 = scint(np.sqrt(15**2+40**2+(3.8/2)**2), np.arccos(3.8/(2*np.sqrt(15**2+40**2+(3.8/2)**2))), 
-                   np.arctan2(40, 15), 3.8/2)
-        d, n, m = scint_interaction(m, s1, theta_d, phi_d, lim_r_scint = 1.5)
-        n_up += n
-        n_down += m
+        d = coin_2_scint(m, s1, s3, theta_d, phi_d)
+        if d == True:
+            d_um = coin_2_scint(m, s3, s2, theta_d, phi_d)
+            d_ml = coin_2_scint(m, s2, s3, theta_d, phi_d)
+        t = coin_3_scint(m, s1, s2, s3, theta_d, phi_d)
         doppie += d
-        t += 1
-        # print(s1.right_y, s1.left_y, s1.pos_x, s1.neg_x, s1.upper_z, s1.lower_z)
-        # print(f'distanza percora in scintillatore: {r}, {r_}')
-    print(f'Number of muons generated to get {numero_che_voglio + 1} conteggi up: {t}')
-    print(f'number of n_up: {n_up}, number of n_down: {n_down}')
-    print('numero di doppie: ', doppie)
+        doppie_um += d_um
+        doppie_ml += d_ml
+        triple += t
+        n += 1
+    print(f'Number of muons generated to get {numero_che_voglio + 1} conteggi up: {n}')
+    print('numero di doppie: ', doppie, ', numero di triple: ', triple)
+    print('efficienza doppie/triple: ', doppie/triple)
+    print('doppie up-middle: ', doppie_um)
+    print('doppie middle-down: ', doppie_ml)
     
+    # print(np.sqrt(s1.upper_z**2 + s1.right_y**2 + s1.pos_x**2))
+    # print(np.sqrt(s2.upper_z**2 + s2.right_y**2 + s2.pos_x**2))
+    # print(np.sqrt(s3.upper_z**2 + s3.right_y**2 + s3.pos_x**2))
+
+
     # samples = sample_cos2(10000)
     
     # # Bins per istogramma
