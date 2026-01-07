@@ -1,7 +1,8 @@
 from xml.etree.ElementTree import parse
 from os.path import isfile
 import matplotlib.pyplot as plt
-from numpy import arange
+from numpy import arange, array, savetxt, round
+
 
 
 #TODO: Conversion sampling units -> time
@@ -24,22 +25,25 @@ def xml_digitizer_parser(path:str = "")->list:
     size = float(settings.find("window").get("size"))
 
     time = arange( size)/frequency
+    event_list = root.findall("event")
+    id_max = event_list[-1].get("id")
 
-
-    for event in root.findall("event"):
+    for event in event_list:
         trace = event.find("trace").text
         id = event.get("id")
         time_stamp = event.get("timestamp")
         clock_time = event.get("clocktime")
-        
-        events.append([int(x) for x in trace.split()])
+
+        perc: int = int(round(id / id_max * 20))
+        string: str = (
+            "[" + "#" * perc + "-" * (20 - perc) + "]\t")
+        print("\r" + string, end="", flush=True)
     
-    return events , time , frequency
+        event_list =  [int(x) for x in trace.split()]
+        csv_filename = "/Users/ibolde/coding/big_data/natale/"+id+".csv"
+        savetxt( csv_filename , event_list , delimiter=",", fmt='%d')
+    
     
 
 if __name__ == "__main__":
-    a , b , c=xml_digitizer_parser("digitizer/prova_xml.xml")
-
-    for i in a:
-        plt.plot(b , i)
-        plt.show()
+    xml_digitizer_parser("/Users/ibolde/Desktop/buon_anno.xml")
