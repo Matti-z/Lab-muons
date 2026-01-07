@@ -13,7 +13,7 @@ def xml_digitizer_parser(path:str = "")->list:
 
     if not isfile(path):
         raise FileNotFoundError(f"XML file not found: {path}")
-    tree = parse("prova_xml.xml")
+    tree = parse(path)
     root = tree.getroot()
 
     events = []
@@ -38,7 +38,7 @@ def xml_digitizer_parser(path:str = "")->list:
     
 
 if __name__ == "__main__":
-    a , b , c=xml_digitizer_parser("prova_xml.xml")
+    a , b , c=xml_digitizer_parser("digitizer/prova_xml.xml")
 
     for i in a:
         plt.plot(b , i)
