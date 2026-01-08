@@ -1,2 +1,2 @@
-Data/timestamp filter=lfs diff=lfs merge=lfs -text
-Data/root_folder/ filter=lfs diff=lfs merge=lfs -text
+Data/timestamp/* filter=lfs diff=lfs merge=lfs -text
+Data/root_folder/* filter=lfs diff=lfs merge=lfs -text
