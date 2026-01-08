@@ -7,3 +7,6 @@ iminuit
 plotly
 pathlib
 nbformat
+uproot
+array
+numba

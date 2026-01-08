@@ -1,11 +1,15 @@
 import numpy as np
 import os
+from pathlib import Path
+
+DATA_PATH = Path('csv/natale')
+
 
 # Read CSV file
-print(len(os.listdir("/Users/ibolde/coding/Lab-muons/AAAAAAAAAAA")))
-for i in os.listdir('/Users/ibolde/coding/Lab-muons/AAAAAAAAAAA'):
-    data = np.genfromtxt("/Users/ibolde/coding/Lab-muons/AAAAAAAAAAA/"+i, delimiter=',')
+print(len(os.listdir(DATA_PATH)))
+for i in os.listdir(DATA_PATH):
+    data = np.genfromtxt(DATA_PATH+i, delimiter=',')
     if abs(min(data) - max(data)) < 300:
-        os.remove("/Users/ibolde/coding/Lab-muons/AAAAAAAAAAA/"+i)
-print(len(os.listdir("/Users/ibolde/coding/Lab-muons/AAAAAAAAAAA")))
+        os.remove(DATA_PATH+i)
+print(len(os.listdir(DATA_PATH)))
     
