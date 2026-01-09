@@ -45,11 +45,10 @@ def extract_timestamps(data:np.ndarray, timestamp_list:np.ndarray, i:int):
     data = np.where( data < (max(data) - delta_val) , 1 , 0)
     step = False
     for i_point , point in enumerate(data):
-        if not point:
+        if point > max(data) - delta_val:
             step = True
-        if point and step:
+        if point < max(data) - delta_val and step:
             step = False
-            
             timestamp_list[i] = i_point/frequency
             i += 1
             if i == n:
