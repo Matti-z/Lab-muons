@@ -8,5 +8,4 @@ plotly
 pathlib
 nbformat
 uproot
-array
 numba
