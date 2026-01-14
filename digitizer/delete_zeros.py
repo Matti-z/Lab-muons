@@ -28,6 +28,4 @@ def remove_trailing_zeros_from_csv(input_file, output_file=None):
     
     print(f"Processed {input_file} and saved to {output_file}")
 
-if __name__ == "__main__":
-    input_csv = "Data/timestamp/2026-01-08.csv"  # Change to your CSV file path
-    remove_trailing_zeros_from_csv(input_csv , input_csv)
+
