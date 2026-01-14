@@ -38,7 +38,7 @@
   <level channel="3" value="0"></level>
  </trigger>
  <window size="3584"></window>
- <posttrigger value="85.0%"></posttrigger>
+ <ptrigger value="85.0%"></ptrigger>
  <channels mask="1"></channels>
 </settings>
 <event id="1" settings="1" digitizer="BE7FD26772E7464F87C5BC44AA012093" timestamp="18446744071570616319" clocktime="1764171986">
