@@ -2,7 +2,7 @@ import numpy as np
 import os
 from pathlib import Path
 
-DATA_PATH = Path('csv/natale')
+DATA_PATH = Path('Lab-muons/pippo')
 
 
 # Read CSV file
