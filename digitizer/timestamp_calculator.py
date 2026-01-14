@@ -7,7 +7,7 @@ from pathlib import Path
 from numba import jit
 
 
-path = str(Path("csv/natale"))
+path = str(Path("csv"))
 out_path =str(Path('Data/timestamp')) 
 delta_val = 500
 n = int(5e7)
@@ -45,9 +45,9 @@ def extract_timestamps(data:np.ndarray, timestamp_list:np.ndarray, i:int):
     data = np.where( data < (max(data) - delta_val) , 1 , 0)
     step = False
     for i_point , point in enumerate(data):
-        if point > max(data) - delta_val:
+        if not point:
             step = True
-        if point < max(data) - delta_val and step:
+        if point and step:
             step = False
             timestamp_list[i] = i_point/frequency
             i += 1
@@ -68,6 +68,7 @@ def timestamp_parser(path , out_path):
 if __name__ =="__main__":
     print(os.path.isdir(path))
     print(os.path.isdir(out_path))
+    print("" , flush=True)
     timestamp_parser(path , out_path)
 
 

@@ -56,11 +56,10 @@ def xml_digitizer_parser(xml_file_path:str = "" , csv_folder_path:str = "")->lis
     
 
 if __name__ == "__main__":
-    PATH_DATA = Path('big_data') / 'part_1.xml'
-    CSV_FOLDER = Path('csv/natale')
+    PATH_DATA = Path('big_data') / '7_1_26_16_48.xml'
+    CSV_FOLDER = Path('csv')
     xml_digitizer_parser(PATH_DATA , CSV_FOLDER)
-    PATH_DATA = Path('big_data') / 'part_2.xml'
+    PATH_DATA = Path('big_data') / '7_1_26_18_07.xml'
     xml_digitizer_parser(PATH_DATA , CSV_FOLDER)
-    timestamp_parser('csv/natale' , 'Data/timestamp')
-    
+    timestamp_parser('csv' , 'Data/timestamp')
     

@@ -7,11 +7,11 @@
 #include<TTree.h>
 
 
-
+// g++ -o parser xml_root_parser.cpp `root-config --cflags --libs` -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml  
 #define LINE_LIMIT 1000
+#define VEC_SIZE 3584
 #define XML_ENDER "</digitizer>"
 
-std::string root_directory = "dio";
 
 
 void setting_parser( std::string starter, std::ifstream& in , std::string& content){
@@ -29,35 +29,44 @@ void setting_parser( std::string starter, std::ifstream& in , std::string& conte
 
 void add_settings_to_root(pugi::xml_document &digitizer, pugi::xml_document &settings)
 {
+    double freq_hz;
+    float volt_low;
+    float volt_high;
+    float postTrg_float;
+    int size;
 
+    // ROOT INSERTION
+    TTree tree("settings", "settings-of-the-dataset");
+    tree.Branch("freq_hz", &freq_hz, "frequency_Hz/D");
+    tree.Branch("volt_low", &volt_low, "lowest-voltage_V/F");
+    tree.Branch("volt_high", &volt_high, "highest-voltage_V/F");
+    tree.Branch("post_trigger", &postTrg_float, "post-trigger_percentage/F");
+    tree.Branch("data_len", &size, "data-lenght/I");
 
     // DIGITIZER CLASS
     pugi::xml_node freq = digitizer.child("digitizer").child("frequency");
-    float freq_hz = freq.attribute("hz").as_float();
+    freq_hz = freq.attribute("hz").as_float();
     pugi::xml_node volt_limit = digitizer.child("digitizer").child("voltagerange");
-    float volt_range[2] = {
-        volt_limit.attribute("low").as_float(),
-        volt_limit.attribute("high").as_float()};
+    volt_low = volt_limit.attribute("low").as_float();
+    volt_high = volt_limit.attribute("hi").as_float();
+
+    std::cout<< volt_low <<volt_high<<"\n";
 
 
     // SETTINGS CLASS
-    pugi::xml_node trg = settings.child("ptrigger");
+    pugi::xml_node trg = settings.child("settings").child("ptrigger");
     std::string postTrg = trg.attribute("value").as_string();
     std::cout<< postTrg << "\n";
     std::cout<<"debug\n";
-    float postTrg_float = std::stof(postTrg.substr(0, postTrg.length() - 1));
-    pugi::xml_node window = settings.child("window");
-    int size = window.attribute("size").as_int();
+    postTrg_float = std::stof(postTrg.substr(0, postTrg.length() - 1));
+    pugi::xml_node window = settings.child("settings").child("window");
+    size = window.attribute("size").as_int();
 
-    // ROOT INSERTION
-    TTree tree("settings", "settings of the dataset");
-    tree.Branch("freq_hz", &freq_hz, "frequency [Hz]/F");
-    tree.Branch("volt_low", &volt_range[0], "lowest voltage[V]/F");
-    tree.Branch("volt_high", &volt_range[1], "highest voltage[V]/F");
-    tree.Branch("post_trigger", &postTrg_float, "post trigger percentage/F");
-    tree.Branch("data_len", &size, "data lenght/I");
+    if (size != VEC_SIZE) std::cout<<"ATTENZIONE cambiare VEC_SIZE al giusto valore:"<<size<<"\n";
+    
     tree.Fill();
     tree.Write();
+
 }
 
 void event_parser( std::ifstream& in , std::string& content){
@@ -79,13 +88,49 @@ void event_parser( std::ifstream& in , std::string& content){
         counter++;
     }
     content += line + "\n";
-
 }
+
+
+void trace_to_root(pugi::xml_node &event, TTree *tree)
+{
+    std::string trace;
+    trace = event.child("trace").text().as_string();
+    std::string id = event.attribute("id").as_string();
+    std::istringstream iss(trace);
+
+    int arr[VEC_SIZE];
+    int x;
+
+    // Parse trace values into vector
+    int iterator = 0;
+    while (iss >> x && iterator < VEC_SIZE)
+    {
+        arr[iterator] = x;
+        // std::cout << arr[iterator];   
+        iterator++;
+    }
+
+    // Create branch and fill tree with event data
+    std::string branch_name = "event " + id;
+    // std::string branch_desc = "event data of id: " + id +"["+std::to_string(VEC_SIZE)+"]/I";
+    std::string branch_desc = "event data of id: " + id +"/I";
+    tree->Branch(branch_name.c_str(), arr, branch_desc.c_str());
+    tree->Fill();
+
+    
+}
+
 
 int main(int argc, char const *argv[])
 {
+
+    std::string xml_path = (argc > 1) ? argv[1] : "/Users/ibolde/coding/Lab-muons/digitizer/prova_xml.xml";
+    std::cout<<xml_path<<"\n";
+    std::string root_directory = (argc > 2) ? argv[2] : "";
+    if (argc > 1) xml_path = argv[1];
+
     // Open the XML input file
-    std::ifstream in("/home/nobolde/coding/Lab-muons/big_data/big.xml");
+    std::ifstream in(xml_path.c_str());
     std::string content;
     std::cout<< in.is_open() << "\n";
 
@@ -101,23 +146,30 @@ int main(int argc, char const *argv[])
     // Parse general settings from XML
     setting_parser( "<settings>" , in , content);
     pugi::xml_document settings;
-    std::cout<<content;
+    
     settings.load_string(content.c_str());
     content.clear();
 
     // Variables for event processing
-    std::string trace;
-    std::vector <int> values; 
+    
     int counter = 0;
     // Process events until end of file
     while( in.peek() != EOF ){
+
+        content += "<events>\n",
         // Generate output ROOT file name
         root_file = root_directory + "file_" + counter + ".root";
         event_parser(in , content);
+        content += "</events>\n";
+
+
 
         // Parse event data from XML string
-        pugi::xml_document events;
-        events.load_string(content.c_str());
+        pugi::xml_document history;
+        std::cout<<content;
+        history.load_string(content.c_str());
+        pugi::xml_node events = history.child("events");
+        // clear string
         content.clear();
 
         // Create and configure ROOT file
@@ -129,33 +181,20 @@ int main(int argc, char const *argv[])
         // Create ROOT tree for events
         std::string tree_name = "event";
         std::string tree_desc = "dataset of events";
-        TTree tree(tree_name.c_str(), tree_desc.c_str());
-        tree.AutoSave("10000");
-
+        TTree *tree = new TTree(tree_name.c_str(), tree_desc.c_str());
         // Extract and store event data from XML
-        for( pugi::xml_node event : events.child("event")){
-            trace = event.attribute("trace").as_string();
-            std::string id = event.attribute("id").as_string();
-            std::istringstream iss(trace);
-            
-            // Parse trace values into vector
-            int x;
-            while( iss >> x){
-                values.push_back(x);
-            }
-            
-            // Create branch and fill tree with event data
-            std::string branch_name = "event "+id;
-            std::string branch_desc= "event data of id: "+id + "/I";
-            tree.Branch(branch_name.c_str(), &values, branch_desc.c_str() );
-            tree.Fill();
-            values.clear();
+        for( pugi::xml_node event : events.children("event")){
+            std::cout<<event.attribute("id").as_string()<<"\n";
+            // std::cout<<trace<<"\n";
+            trace_to_root(event, tree);
         }
+        tree -> Write();
         
         // Write tree to file and close
         counter ++;
-        tree.Write();
+        
         rootFile.Close();
     }
     return 0;
 }
+
