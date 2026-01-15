@@ -7,15 +7,16 @@
 #include<TTree.h>
 
 
-// g++ -o parser xml_root_parser.cpp `root-config --cflags --libs` -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml  
-#define LINE_LIMIT 1000
+// g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml  
+#define LINE_LIMIT 1000000
 #define VEC_SIZE 3584
 #define XML_ENDER "</digitizer>"
 
-
+// comp 0 line_lim 1e7 16min 45s
+// comp 9 line_lim 1e7 
 void usage(){
     std::cout << "Usage of the script:\n";
-    std::cout << "./parser <xml path> <root path>\n";
+    std::cout << "./parser <xml path> <root path>\n\n\n";
     std::cout << "the root path will be the directory in which it will be saved different root files, each with a structure:\n";
     std::cout << "Tree: settings \t containing all useful characteristics of the dataset\n";
     std::cout << "|Branch: freq_hz\t containing frequency of data taken\n";
@@ -23,8 +24,8 @@ void usage(){
     std::cout << "|Branch: volt_high \t containing highest voltage\n";
     std::cout << "|Branch: post_trigger \t containing post-trigger percentage\n";
     std::cout << "|Branch: data_len \t containing data length\n";
-    std::cout << "Tree:event_[i] with i varying from 1 to event lenght\n";
-    std::cout << "| Branch: event \t containing dataset of specific event\n";
+    std::cout << "Tree:event [i] with i varying from 1 to event lenght\n";
+    std::cout << "| Branch: event [id] \t containing dataset of specific event\n";
     exit(0);
 }
 
@@ -68,7 +69,7 @@ void add_settings_to_root(pugi::xml_document &digitizer, pugi::xml_document &set
 
 
     // SETTINGS CLASS
-    pugi::xml_node trg = settings.child("settings").child("ptrigger");
+    pugi::xml_node trg = settings.child("settings").child("posttrigger");
     std::string postTrg = trg.attribute("value").as_string();
     postTrg_float = std::stof(postTrg.substr(0, postTrg.length() - 1));
     pugi::xml_node window = settings.child("settings").child("window");
@@ -93,9 +94,6 @@ void event_parser( std::ifstream& in , std::string& content){
     while(std::getline(in, line) && line.find(starter) != 0);
     content += line + "\n";
     while(std::getline(in, line) && !(counter >= LINE_LIMIT && line == ender) ){
-        if (line == XML_ENDER) {
-            return;
-        }
         content += line + "\n";
         counter++;
     }
@@ -141,16 +139,20 @@ void trace_to_root(pugi::xml_node &event)
 int main(int argc, char const *argv[])
 {
 
-    // if (argc <= 1) usage();
-    std::string xml_path = (argc > 1) ? argv[1] : "/Users/ibolde/coding/Lab-muons/digitizer/prova_xml.xml";
+    if (argc <= 1) usage();
+    std::string xml_path = (argc > 1) ? argv[1] : "Lab-muons/digitizer/prova_xml.xml";
     std::cout<<xml_path<<"\n";
-    std::string root_directory = (argc > 2) ? argv[2] : "";
+    std::string root_directory = (argc > 2) ? argv[2] : ".";
     if ( root_directory.back() != '/' ) root_directory.append("/");
 
     // Open the XML input file
     std::ifstream in(xml_path.c_str());
     std::string content;
     std::cout<< in.is_open() << "\n";
+    if (!in.is_open()){
+        std::cout << "File not Found\n";
+        exit(0);
+    }
 
     // Initialize ROOT output file path
     std::string root_file = root_directory+"try.root";
@@ -159,6 +161,7 @@ int main(int argc, char const *argv[])
     setting_parser( "<digitizer>" , in , content);
     pugi::xml_document digitizer;
     digitizer.load_string(content.c_str());
+    std::cout << content;
     content.clear();
 
     // Parse general settings from XML
@@ -166,6 +169,7 @@ int main(int argc, char const *argv[])
     pugi::xml_document settings;
     
     settings.load_string(content.c_str());
+    std::cout << content;
     content.clear();
 
     // Variables for event processing
@@ -177,7 +181,7 @@ int main(int argc, char const *argv[])
 
         content += "<events>\n",
         // Generate output ROOT file name
-        root_file = root_directory + "file_" + std::string(counter) + ".root";
+        root_file = root_directory + "file_" + counter + ".root";
         event_parser(in , content);
         content += "</events>\n";
 
@@ -189,16 +193,12 @@ int main(int argc, char const *argv[])
         pugi::xml_node events = history.child("events");
         // clear string
         content.clear();
-
         // Create and configure ROOT file
-        TFile rootFile( root_file.c_str() , "RECREATE");
+        TFile rootFile( root_file.c_str() , "RECREATE","", ROOT::CompressionSettings(ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD, 1));
 
         // Write settings to ROOT tree
         add_settings_to_root(digitizer, settings);
 
-        // Create ROOT tree for events
-        std::string tree_name = "event";
-        std::string tree_desc = "dataset of events";
         
         // Extract and store event data from XML
         for( pugi::xml_node event : events.children("event")){
