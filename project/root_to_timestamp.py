@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 delta = 500
 
-def timestamp_calculator(vec:np.ndarray , frequency:float ,  csv_filename:str):
+def timestamp_calculator(vec:np.ndarray , frequency:float , dT_ptrigg: float , csv_filename:str):
     if not os.path.isfile(csv_filename):
         if "/" in csv_filename:
             print("creating directories:\t" , os.path.dirname(csv_filename))
@@ -17,14 +17,15 @@ def timestamp_calculator(vec:np.ndarray , frequency:float ,  csv_filename:str):
         append_csv(csv_filename , 0)
     for index in range(1 , len(vec)):
         if vec[index] < -500 and vec[index-1]>-500:
-            # plt.figure()
-            # plt.plot(vec)
-            # plt.plot(index, vec[index], 'ro')
-            # plt.xlabel('Index')
-            # plt.ylabel('Value')
-            # plt.title('Vector with detected point')
-            # plt.show()
-            append_csv(csv_filename , float(index)/frequency)
+            plt.figure()
+            plt.plot(vec)
+            plt.plot(index, vec[index], 'ro')
+            plt.xlabel('Index')
+            plt.ylabel('Value')
+            plt.axvline(x=dT_ptrigg*frequency, color='g', linestyle='--', label='dT_ptrigg')
+            plt.title('Vector with detected point')
+            plt.show()
+            append_csv(csv_filename , float(index)/frequency - dT_ptrigg)
             
 def append_csv(filename: str, value: float):
     with open(filename, 'a') as f:
@@ -42,10 +43,12 @@ def import_root_file(file , id:int):
 def import_root_settings(file):
     tree_name = "settings"
     tree = file[tree_name]
-    return tree["freq_hz"].array(library="np")[0]
+    
+    return tree["freq_hz"].array(library="np")[0] , tree["post_trigger"].array(library="np")[0] , tree["data_len"].array(library="np")[0]
 
 def process_root_files(root_folder:str , csv_filename:str):
-    
+    if os.path.isfile(csv_filename):
+        raise ValueError("csv path inserted is already a file")
     if len(root_folder) != 0:
         if root_folder[-1] != "/":
             root_folder += "/"
@@ -59,7 +62,9 @@ def process_root_files(root_folder:str , csv_filename:str):
     tree_name = f"event {id}"
     
     with uproot.open(fname) as file: # type: ignore
-        frequency = import_root_settings(file)
+        frequency, post_trigger , data_len = import_root_settings(file)
+        print(post_trigger , type(post_trigger))
+        dT_ptrigg = data_len*(100 - post_trigger)/(frequency*100)
 
     print(fname)
     while(os.path.isfile(fname)):
@@ -68,16 +73,13 @@ def process_root_files(root_folder:str , csv_filename:str):
             while(tree_name in file):
                 vec = import_root_file(file , id)
                 if max(vec) - min(vec) > delta:
-                    timestamp_calculator(vec , frequency , csv_filename)
+                    timestamp_calculator(vec , frequency , dT_ptrigg, csv_filename)
                 id += 1
                 print(id)
                 tree_name = f"event {id}"
-        
-        
         n+=1
         fname = root_folder + f"file_{n}.root"
 
 if __name__ == "__main__":
-    
-    process_root_files("" , "try.csv")
+    process_root_files("project/" , "project/try.csv")
     

@@ -8,8 +8,7 @@
 
 
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml  
-#define LINE_LIMIT 1000000
-#define VEC_SIZE 3584
+#define LINE_LIMIT 100000
 #define XML_ENDER "</digitizer>"
 
 // comp 0 line_lim 1e7 16min 45s
@@ -75,7 +74,6 @@ void add_settings_to_root(pugi::xml_document &digitizer, pugi::xml_document &set
     pugi::xml_node window = settings.child("settings").child("window");
     size = window.attribute("size").as_int();
 
-    if (size != VEC_SIZE) std::cout<<"ATTENZIONE cambiare VEC_SIZE al giusto valore:"<<size<<"\n";
     
     tree.Fill();
     tree.Write();
