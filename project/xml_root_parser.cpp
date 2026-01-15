@@ -13,6 +13,21 @@
 #define XML_ENDER "</digitizer>"
 
 
+void usage(){
+    std::cout << "Usage of the script:\n";
+    std::cout << "./parser <xml path> <root path>\n";
+    std::cout << "the root path will be the directory in which it will be saved different root files, each with a structure:\n";
+    std::cout << "Tree: settings \t containing all useful characteristics of the dataset\n";
+    std::cout << "|Branch: freq_hz\t containing frequency of data taken\n";
+    std::cout << "|Branch: volt_low \t containing lowest voltage\n";
+    std::cout << "|Branch: volt_high \t containing highest voltage\n";
+    std::cout << "|Branch: post_trigger \t containing post-trigger percentage\n";
+    std::cout << "|Branch: data_len \t containing data length\n";
+    std::cout << "Tree:event_[i] with i varying from 1 to event lenght\n";
+    std::cout << "| Branch: event \t containing dataset of specific event\n";
+    exit(0);
+}
+
 
 void setting_parser( std::string starter, std::ifstream& in , std::string& content){
     
@@ -126,10 +141,11 @@ void trace_to_root(pugi::xml_node &event)
 int main(int argc, char const *argv[])
 {
 
+    // if (argc <= 1) usage();
     std::string xml_path = (argc > 1) ? argv[1] : "/Users/ibolde/coding/Lab-muons/digitizer/prova_xml.xml";
     std::cout<<xml_path<<"\n";
     std::string root_directory = (argc > 2) ? argv[2] : "";
-    if (argc > 1) xml_path = argv[1];
+    if ( root_directory.back() != '/' ) root_directory.append("/");
 
     // Open the XML input file
     std::ifstream in(xml_path.c_str());
@@ -161,7 +177,7 @@ int main(int argc, char const *argv[])
 
         content += "<events>\n",
         // Generate output ROOT file name
-        root_file = root_directory + "file_" + counter + ".root";
+        root_file = root_directory + "file_" + std::string(counter) + ".root";
         event_parser(in , content);
         content += "</events>\n";
 
