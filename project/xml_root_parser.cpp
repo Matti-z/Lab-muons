@@ -50,14 +50,11 @@ void add_settings_to_root(pugi::xml_document &digitizer, pugi::xml_document &set
     volt_low = volt_limit.attribute("low").as_float();
     volt_high = volt_limit.attribute("hi").as_float();
 
-    std::cout<< volt_low <<volt_high<<"\n";
 
 
     // SETTINGS CLASS
     pugi::xml_node trg = settings.child("settings").child("ptrigger");
     std::string postTrg = trg.attribute("value").as_string();
-    std::cout<< postTrg << "\n";
-    std::cout<<"debug\n";
     postTrg_float = std::stof(postTrg.substr(0, postTrg.length() - 1));
     pugi::xml_node window = settings.child("settings").child("window");
     size = window.attribute("size").as_int();
@@ -91,34 +88,39 @@ void event_parser( std::ifstream& in , std::string& content){
 }
 
 
-void trace_to_root(pugi::xml_node &event, TTree *tree)
+void trace_to_root(pugi::xml_node &event)
 {
     std::string trace;
     trace = event.child("trace").text().as_string();
     std::string id = event.attribute("id").as_string();
+    std::string tree_name = "event " + id;
+    std::string tree_desc = "event data of id: " + id +"/S";
+
+    TTree *tree = new TTree(tree_name.c_str(), tree_desc.c_str());
+    
     std::istringstream iss(trace);
 
-    int arr[VEC_SIZE];
     int x;
+    std::vector<short> values;  
+    
+    // std::string branch_desc = "event data of id: " + id +"/I";
+    tree->Branch(tree_name.c_str(), &values);
 
     // Parse trace values into vector
-    int iterator = 0;
-    while (iss >> x && iterator < VEC_SIZE)
+    while (iss >> x )
     {
-        arr[iterator] = x;
-        // std::cout << arr[iterator];   
-        iterator++;
+        values.push_back(x);
     }
 
-    // Create branch and fill tree with event data
-    std::string branch_name = "event " + id;
-    // std::string branch_desc = "event data of id: " + id +"["+std::to_string(VEC_SIZE)+"]/I";
-    std::string branch_desc = "event data of id: " + id +"/I";
-    tree->Branch(branch_name.c_str(), arr, branch_desc.c_str());
     tree->Fill();
-
+    tree->Write();
     
 }
+
+
+
+
+
 
 
 int main(int argc, char const *argv[])
@@ -153,6 +155,7 @@ int main(int argc, char const *argv[])
     // Variables for event processing
     
     int counter = 0;
+    
     // Process events until end of file
     while( in.peek() != EOF ){
 
@@ -166,7 +169,6 @@ int main(int argc, char const *argv[])
 
         // Parse event data from XML string
         pugi::xml_document history;
-        std::cout<<content;
         history.load_string(content.c_str());
         pugi::xml_node events = history.child("events");
         // clear string
@@ -181,14 +183,14 @@ int main(int argc, char const *argv[])
         // Create ROOT tree for events
         std::string tree_name = "event";
         std::string tree_desc = "dataset of events";
-        TTree *tree = new TTree(tree_name.c_str(), tree_desc.c_str());
+        
         // Extract and store event data from XML
         for( pugi::xml_node event : events.children("event")){
             std::cout<<event.attribute("id").as_string()<<"\n";
             // std::cout<<trace<<"\n";
-            trace_to_root(event, tree);
+            trace_to_root(event);
         }
-        tree -> Write();
+        
         
         // Write tree to file and close
         counter ++;
