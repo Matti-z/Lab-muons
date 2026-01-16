@@ -7,13 +7,8 @@ from pathlib import Path
 from numba import jit
 
 
-<<<<<<< HEAD
 path = str(Path("csv"))
 out_path =str(Path('Data/timestamp')) 
-=======
-path = str(Path("Lab-muons/pippo"))
-out_path =str(Path('Lab-muons/pippo_out')) 
->>>>>>> 8a24caefe26e1c33d41a4d41cd1ba62060286430
 delta_val = 500
 n = int(1e5)
 i = 0
@@ -76,19 +71,12 @@ def extract_timestamps(data: np.ndarray, timestamp_list: np.ndarray, i: int, del
     threshold = maxv - delta_val
 
     step = False
-<<<<<<< HEAD
-    for i_point , point in enumerate(data):
-        if not point:
-            step = True
-        if point and step:
-=======
     for idx in range(data.shape[0]):
         point = data[idx]
         if point > threshold:
             step = True
         elif point <= threshold and step:
             # fronte di discesa rilevato
->>>>>>> 8a24caefe26e1c33d41a4d41cd1ba62060286430
             step = False
             timestamp_list[i] = idx / frequency
             i += 1
@@ -97,24 +85,19 @@ def extract_timestamps(data: np.ndarray, timestamp_list: np.ndarray, i: int, del
     return i
 
 
-def save_csv(timestamp_list , out_path, out_name):
+def save_csv(timestamp_list , out_path, out_name="timestamps.csv"):
     csv_filename = str(Path(out_path)) + "/" + out_name
     np.savetxt( csv_filename , timestamp_list , delimiter=",")
             
 def timestamp_parser(path , out_path, out_name):
     a = timestamp_calculator( path )
-<<<<<<< HEAD
-    save_csv(a, out_path)
+    save_csv(a, out_path, out_name)
 
 
 if __name__ =="__main__":
     print(os.path.isdir(path))
     print(os.path.isdir(out_path))
     print("" , flush=True)
-    timestamp_parser(path , out_path)
-
-=======
-    save_csv(a, out_path, out_name)
->>>>>>> 8a24caefe26e1c33d41a4d41cd1ba62060286430
+    timestamp_parser(path , out_path, "timestamps.csv")
 
 
