@@ -17,14 +17,14 @@ def timestamp_calculator(vec:np.ndarray , frequency:float , dT_ptrigg: float , c
         append_csv(csv_filename , 0)
     for index in range(1 , len(vec)):
         if vec[index] < -500 and vec[index-1]>-500:
-            plt.figure()
-            plt.plot(vec)
-            plt.plot(index, vec[index], 'ro')
-            plt.xlabel('Index')
-            plt.ylabel('Value')
-            plt.axvline(x=dT_ptrigg*frequency, color='g', linestyle='--', label='dT_ptrigg')
-            plt.title('Vector with detected point')
-            plt.show()
+            # plt.figure()
+            # plt.plot(vec)
+            # plt.plot(index, vec[index], 'ro')
+            # plt.xlabel('Index')
+            # plt.ylabel('Value')
+            # plt.axvline(x=dT_ptrigg*frequency, color='g', linestyle='--', label='dT_ptrigg')
+            # plt.title('Vector with detected point')
+            # plt.show()
             append_csv(csv_filename , float(index)/frequency - dT_ptrigg)
             
 def append_csv(filename: str, value: float):
@@ -33,10 +33,8 @@ def append_csv(filename: str, value: float):
     
 
 
-def import_root_file(tree , id:int):
-    branch_name = "event_" + str(id)
+def import_root_file(tree , branch_name: str):
 
-    
     arr = tree[branch_name].array(library="np")
     return arr[0]
 
@@ -57,9 +55,6 @@ def process_root_files(root_folder:str , csv_filename:str):
     n = 0
     fname = root_folder + f"file_{n}.root"
 
-
-    id = 1
-    branch_name = f"event_{id}"
     
     with uproot.open(fname) as file: # type: ignore
         frequency, post_trigger , data_len = import_root_settings(file)
@@ -70,12 +65,13 @@ def process_root_files(root_folder:str , csv_filename:str):
     while(os.path.isfile(fname)):
         with uproot.open(fname) as file: # type: ignore
             tree = file["events"]
-            while(branch_name in tree):
-                vec = import_root_file(tree , id)
-                print(vec)
+            tree_keys = tree.keys()
+            for branch_name in tree_keys:
+                vec = import_root_file(tree , branch_name)
+                print(len(vec))
+                print(branch_name)
                 if max(vec) - min(vec) > delta:
                     timestamp_calculator(vec , frequency , dT_ptrigg, csv_filename)
-                id += 1
                 print(branch_name in tree)
                 branch_name = f"event_{id}"
         n+=1
