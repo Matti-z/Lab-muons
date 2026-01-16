@@ -9,6 +9,7 @@
 
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml  
 #define LINE_LIMIT 100000
+#define delta 500
 #define XML_ENDER "</digitizer>"
 
 // comp 0 line_lim 1e7 16min 45s
@@ -112,35 +113,32 @@ void trace_to_root(pugi::xml_node &event , TTree *tree)
 
     int x;
     std::vector<short> values;  
+    values.clear();
     
     // std::string branch_desc = "event data of id: " + id +"/I";
-    tree->Branch(branch_name.c_str(), &values);
+    TBranch *branch = tree->Branch(branch_name.c_str(), &values);
 
     // Parse trace values into vector
     int min = 0;
     int max = 0;
-    bool save = true
+    bool save = false;
     while (iss >> x )
     {
-        if ((min == 0) && (max ==0)){
+        if(!save){
+            if ((min == 0) && (max ==0)){
             min = x;
             max = x;
-        }
-        if (x < min){
-            min = x;
-        }
-        if (x > max){
-            max = x;
-        }
-        if (max - min > delta){
-            save = false;
-            break;
+            }
+            if (x < min) min = x;
+            if (x > max) max = x;
+            if (max - min > delta) save = true;
         }
         values.push_back(x);
     }
+    std::cout<< values.size()<<"\n";
     if (save) tree->Fill();
-
-    
+    else tree -> GetListOfBranches()->Remove(branch);
+    values.clear();
 }
 
 
@@ -207,15 +205,15 @@ int main(int argc, char const *argv[])
         // clear string
         content.clear();
         // Create and configure ROOT file
-        // TFile rootFile( root_file.c_str() , "RECREATE","", ROOT::CompressionSettings(ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD, 1));
-        TFile rootFile( root_file.c_str() , "RECREATE");
+        TFile rootFile( root_file.c_str() , "RECREATE","", ROOT::CompressionSettings(ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD, 1));
         
 
         // Write settings to ROOT tree
         add_settings_to_root(digitizer, settings);
         std::string tree_name = "events";
         TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
-        // tree ->AutoSave("10000");
+        tree ->AutoSave("100000");
+        tree ->SetAutoFlush(50000);
 
         
         // Extract and store event data from XML
@@ -228,8 +226,8 @@ int main(int argc, char const *argv[])
         
         // Write tree to file and close
         counter ++;
-        // tree->Write("", TObject::kOverwrite);
-        tree->Write();
+        tree->Write("", TObject::kOverwrite);
+        // tree->Write();
         rootFile.Close();
     }
     return 0;

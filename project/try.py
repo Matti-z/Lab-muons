@@ -10,24 +10,12 @@ if __name__ == "__main__":
     fname = f"file_{n}.root"
 
 
-    id = 1
-    start = time.time()
-    tree_name = f"event {id}"
-    end = time.time()
-    print(f"Time elapsed: {end - start:.10f} seconds")
-    tree_name = f"event {id}"
 
     
     with uproot.open(fname) as file: # type: ignore
-        start = time.time()
-        print(tree_name in file)
-        end = time.time()
-        print(f"Time elapsed: {end - start:.10f} seconds")
-        start = time.time()
-        a = file.keys()
-        end = time.time()
-        print(type(a))
+        tree = file["events"]
+        tree_keys = tree.keys()
+        print(tree_keys[0])
         
-    print(f"Time elapsed: {end - start:.10f} seconds")
 
     
