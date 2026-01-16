@@ -117,12 +117,28 @@ void trace_to_root(pugi::xml_node &event , TTree *tree)
     tree->Branch(branch_name.c_str(), &values);
 
     // Parse trace values into vector
+    int min = 0;
+    int max = 0;
+    bool save = true
     while (iss >> x )
     {
+        if ((min == 0) && (max ==0)){
+            min = x;
+            max = x;
+        }
+        if (x < min){
+            min = x;
+        }
+        if (x > max){
+            max = x;
+        }
+        if (max - min > delta){
+            save = false;
+            break;
+        }
         values.push_back(x);
     }
-
-    tree->Fill();
+    if (save) tree->Fill();
 
     
 }
@@ -199,7 +215,7 @@ int main(int argc, char const *argv[])
         add_settings_to_root(digitizer, settings);
         std::string tree_name = "events";
         TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
-        tree ->AutoSave("10000");
+        // tree ->AutoSave("10000");
 
         
         // Extract and store event data from XML
@@ -212,7 +228,8 @@ int main(int argc, char const *argv[])
         
         // Write tree to file and close
         counter ++;
-        tree->Write("", TObject::kOverwrite);
+        // tree->Write("", TObject::kOverwrite);
+        tree->Write();
         rootFile.Close();
     }
     return 0;

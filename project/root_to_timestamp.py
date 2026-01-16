@@ -33,11 +33,11 @@ def append_csv(filename: str, value: float):
     
 
 
-def import_root_file(file , id:int):
-    tree_name = "event " + str(id)
+def import_root_file(tree , id:int):
+    branch_name = "event_" + str(id)
 
-    tree = file[tree_name]
-    arr = tree[tree_name].array(library="np")
+    
+    arr = tree[branch_name].array(library="np")
     return arr[0]
 
 def import_root_settings(file):
@@ -59,7 +59,7 @@ def process_root_files(root_folder:str , csv_filename:str):
 
 
     id = 1
-    tree_name = f"event {id}"
+    branch_name = f"event_{id}"
     
     with uproot.open(fname) as file: # type: ignore
         frequency, post_trigger , data_len = import_root_settings(file)
@@ -69,17 +69,18 @@ def process_root_files(root_folder:str , csv_filename:str):
     print(fname)
     while(os.path.isfile(fname)):
         with uproot.open(fname) as file: # type: ignore
-            print(id)
-            while(tree_name in file):
-                vec = import_root_file(file , id)
+            tree = file["events"]
+            while(branch_name in tree):
+                vec = import_root_file(tree , id)
+                print(vec)
                 if max(vec) - min(vec) > delta:
                     timestamp_calculator(vec , frequency , dT_ptrigg, csv_filename)
                 id += 1
-                print(id)
-                tree_name = f"event {id}"
+                print(branch_name in tree)
+                branch_name = f"event_{id}"
         n+=1
         fname = root_folder + f"file_{n}.root"
 
 if __name__ == "__main__":
-    process_root_files("project/" , "project/try.csv")
+    process_root_files("" , "try.csv")
     
