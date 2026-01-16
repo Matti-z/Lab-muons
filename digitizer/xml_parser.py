@@ -52,9 +52,7 @@ def xml_digitizer_parser(xml_file_path:str = "" , csv_folder_path:str = "")->lis
     del event_list
     del event_id
     collect()
-<<<<<<< HEAD
 
-    
 
 if __name__ == "__main__":
     PATH_DATA = Path('big_data') / '7_1_26_16_48.xml'
@@ -63,6 +61,3 @@ if __name__ == "__main__":
     PATH_DATA = Path('big_data') / '7_1_26_18_07.xml'
     xml_digitizer_parser(PATH_DATA , CSV_FOLDER)
     timestamp_parser('csv' , 'Data/timestamp')
-    
-=======
->>>>>>> 8a24caefe26e1c33d41a4d41cd1ba62060286430

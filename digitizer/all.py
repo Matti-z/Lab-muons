@@ -3,7 +3,7 @@ import timestamp_calculator
 import delete_zeros
 from datetime import datetime
 
-path_file_scope = '9_1_26_16_00.xml'
+path_file_scope = '14_1_26_17_39.xml'
 path_file_csv = 'Lab-muons/csv'
 path_file_output = 'Lab-muons/Data/timestamp'
 
