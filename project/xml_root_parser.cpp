@@ -23,8 +23,8 @@ void usage(){
     std::cout << "|Branch: volt_high \t containing highest voltage\n";
     std::cout << "|Branch: post_trigger \t containing post-trigger percentage\n";
     std::cout << "|Branch: data_len \t containing data length\n";
-    std::cout << "Tree:event [i] with i varying from 1 to event lenght\n";
-    std::cout << "| Branch: event [id] \t containing dataset of specific event\n";
+    std::cout << "Tree:event \t tree containing all the data";
+    std::cout << "| Branch: event [id] \t containing dataset of specific event with [id] = id\n";
     exit(0);
 }
 
@@ -99,15 +99,14 @@ void event_parser( std::ifstream& in , std::string& content){
 }
 
 
-void trace_to_root(pugi::xml_node &event)
+void trace_to_root(pugi::xml_node &event , TTree *tree)
 {
     std::string trace;
     trace = event.child("trace").text().as_string();
     std::string id = event.attribute("id").as_string();
-    std::string tree_name = "event " + id;
-    std::string tree_desc = "event data of id: " + id +"/S";
+    
 
-    TTree *tree = new TTree(tree_name.c_str(), tree_desc.c_str());
+    std::string branch_name = "event_"+id;
     
     std::istringstream iss(trace);
 
@@ -115,7 +114,7 @@ void trace_to_root(pugi::xml_node &event)
     std::vector<short> values;  
     
     // std::string branch_desc = "event data of id: " + id +"/I";
-    tree->Branch(tree_name.c_str(), &values);
+    tree->Branch(branch_name.c_str(), &values);
 
     // Parse trace values into vector
     while (iss >> x )
@@ -124,7 +123,7 @@ void trace_to_root(pugi::xml_node &event)
     }
 
     tree->Fill();
-    tree->Write();
+
     
 }
 
@@ -192,23 +191,28 @@ int main(int argc, char const *argv[])
         // clear string
         content.clear();
         // Create and configure ROOT file
-        TFile rootFile( root_file.c_str() , "RECREATE","", ROOT::CompressionSettings(ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD, 1));
+        // TFile rootFile( root_file.c_str() , "RECREATE","", ROOT::CompressionSettings(ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD, 1));
+        TFile rootFile( root_file.c_str() , "RECREATE");
+        
 
         // Write settings to ROOT tree
         add_settings_to_root(digitizer, settings);
+        std::string tree_name = "events";
+        TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
+        tree ->AutoSave("10000");
 
         
         // Extract and store event data from XML
         for( pugi::xml_node event : events.children("event")){
             std::cout<<event.attribute("id").as_string()<<"\n";
             // std::cout<<trace<<"\n";
-            trace_to_root(event);
+            trace_to_root(event , tree);
         }
         
         
         // Write tree to file and close
         counter ++;
-        
+        tree->Write("", TObject::kOverwrite);
         rootFile.Close();
     }
     return 0;
