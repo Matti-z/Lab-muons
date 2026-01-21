@@ -2,6 +2,7 @@ import subprocess
 import os
 from pathlib import Path
 from root_to_timestamp import process_root_files
+from drive_sync import sync_local_folder_to_drive
 
 
 
@@ -31,5 +32,10 @@ process_root_files(root_path , csv_path)
 subprocess.run(['git', 'add', universal_dir("Data/timestamp/*")], capture_output=True)
 subprocess.run(['git', 'commit', '-m', 'Update timestamp data ' + xml_filename], capture_output=True)
 subprocess.run(['git', 'push'], capture_output=True)
+
+
+
+# copy files to drive, if not configure, comment it out
+sync_local_folder_to_drive()
 
 
