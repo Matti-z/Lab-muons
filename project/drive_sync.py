@@ -14,18 +14,21 @@ default_dir = str(Path(".").absolute()).split("/Lab-muons")[0]+"/Lab-muons/"
 universal_dir = lambda path: default_dir + path
 
 LOCAL_FOLDER = universal_dir("Data/timestamp")
-token_location = universal_dir("../tokens")
+token_location = universal_dir("../tokens/")
 
 def authenticate():
     creds = None
-    if os.path.exists("token.json"):
+    if os.path.exists(token_location+"token.json"):
         creds = Credentials.from_authorized_user_file(token_location+"token.json" , SCOPE)
+        print(token_location)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
+            print("token")
         else:
             flow = InstalledAppFlow.from_client_secrets_file(token_location+"client_secret.json" , SCOPE)
             creds = flow.run_local_server( port = 0)
+            print("secret file")
         
         with open(token_location+"token.json" , "w") as token:
             token.write( creds.to_json()) # type: ignore
@@ -86,3 +89,6 @@ def sync_local_folder_to_drive():
                 print(f"Failed to upload {file}")
 
     drive_service.close()
+
+if __name__ == "__main__":
+    sync_local_folder_to_drive()

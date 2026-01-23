@@ -7,7 +7,7 @@
 #include<TTree.h>
 
 
-// g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml  
+// g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
 #define LINE_LIMIT 100000
 #define delta 500
 #define XML_ENDER "</digitizer>"
