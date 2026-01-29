@@ -58,7 +58,6 @@ def process_root_files(root_folder:str , csv_filename:str):
     
     with uproot.open(fname) as file: # type: ignore
         frequency, post_trigger , data_len = import_root_settings(file)
-        print(post_trigger , type(post_trigger))
         dT_ptrigg = data_len*(100 - post_trigger)/(frequency*100)
 
     print(fname)
@@ -68,11 +67,8 @@ def process_root_files(root_folder:str , csv_filename:str):
             tree_keys = tree.keys()
             for branch_name in tree_keys:
                 vec = import_root_file(tree , branch_name)
-                print(len(vec))
-                print(branch_name)
                 if max(vec) - min(vec) > delta:
                     timestamp_calculator(vec , frequency , dT_ptrigg, csv_filename)
-                print(branch_name in tree)
                 branch_name = f"event_{id}"
         n+=1
         fname = root_folder + f"file_{n}.root"
