@@ -9,7 +9,7 @@ from drive_sync import sync_local_folder_to_drive
 default_dir = str(Path(".").absolute()).split("/Lab-muons")[0]+"/Lab-muons/"
 universal_dir = lambda path: default_dir + path
 
-xml_path = universal_dir("big_data/21_01_2024_17_42.xml")
+xml_path = universal_dir("big_data/23_01_2026_17_31.xml")
 xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
 csv_path = universal_dir("Data/timestamp/"+xml_filename+".csv")
 
@@ -23,7 +23,7 @@ os.makedirs(os.path.dirname(xml_path), exist_ok=True)
 os.makedirs(os.path.dirname(root_path), exist_ok=True)
 
 # Best approach for calling ./parser with arguments
-result = subprocess.run([universal_dir("project/parser_mac"), xml_path, root_path], capture_output=True, text=True)
+result = subprocess.run([universal_dir("project/parser_mac"), xml_path, root_path], capture_output=False)
 print(result.stdout)
 if result.returncode != 0:
     print(result.stderr)
