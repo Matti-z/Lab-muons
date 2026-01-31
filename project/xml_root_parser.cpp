@@ -135,7 +135,6 @@ void trace_to_root(pugi::xml_node &event , TTree *tree)
         }
         values.push_back(x);
     }
-    std::cout<< values.size()<<"\n";
     if (save) tree->Fill();
     else tree -> GetListOfBranches()->Remove(branch);
     values.clear();
@@ -159,7 +158,6 @@ int main(int argc, char const *argv[])
     // Open the XML input file
     std::ifstream in(xml_path.c_str());
     std::string content;
-    std::cout<< in.is_open() << "\n";
     if (!in.is_open()){
         std::cout << "File not Found\n";
         exit(0);
@@ -172,7 +170,6 @@ int main(int argc, char const *argv[])
     setting_parser( "<digitizer>" , in , content);
     pugi::xml_document digitizer;
     digitizer.load_string(content.c_str());
-    std::cout << content;
     content.clear();
 
     // Parse general settings from XML
@@ -180,7 +177,6 @@ int main(int argc, char const *argv[])
     pugi::xml_document settings;
     
     settings.load_string(content.c_str());
-    std::cout << content;
     content.clear();
 
     // Variables for event processing

@@ -34,7 +34,6 @@ def append_csv(filename: str, value: float):
 
 
 def import_root_file(tree , branch_name: str):
-
     arr = tree[branch_name].array(library="np")
     return arr[0]
 
@@ -45,6 +44,8 @@ def import_root_settings(file):
     return tree["freq_hz"].array(library="np")[0] , tree["post_trigger"].array(library="np")[0] , tree["data_len"].array(library="np")[0]
 
 def process_root_files(root_folder:str , csv_filename:str):
+    ls = os.listdir(root_folder)
+    max_num = max([int(f.split('_')[1].split('.')[0]) for f in ls if f.startswith('file_') and f.endswith('.root')])
     if os.path.isfile(csv_filename):
         raise ValueError("csv path inserted is already a file")
     if len(root_folder) != 0:
@@ -60,7 +61,6 @@ def process_root_files(root_folder:str , csv_filename:str):
         frequency, post_trigger , data_len = import_root_settings(file)
         dT_ptrigg = data_len*(100 - post_trigger)/(frequency*100)
 
-    print(fname)
     while(os.path.isfile(fname)):
         with uproot.open(fname) as file: # type: ignore
             tree = file["events"]
@@ -72,6 +72,11 @@ def process_root_files(root_folder:str , csv_filename:str):
                 branch_name = f"event_{id}"
         n+=1
         fname = root_folder + f"file_{n}.root"
+
+        perc: int = int(round(n /  max_num * 30))
+        string: str = (
+            "[" + "#" * perc + "-" * (30 - perc) + "]\t" + "\t" + str(i) + "\t" + str(len(file_list)))
+        print("\r" + string, end="", flush=True)
 
 if __name__ == "__main__":
     process_root_files("" , "try.csv")
