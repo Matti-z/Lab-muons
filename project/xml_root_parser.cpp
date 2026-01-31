@@ -6,17 +6,20 @@
 #include <cctype>
 #include<TFile.h>
 #include<TTree.h>
+#include <iomanip>
 
-
+// TODO: al posto di creare infinite branch, immagazzina tutto in una singola branch (AAAAAAA)
 
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml
 #define LINE_LIMIT 100000
 #define DELTA 500
-#define AUTO_FLUSH 50000
-#define AUTO_SAVE 100000
+#define AUTO_FLUSH 25000
+#define AUTO_SAVE 50000
 
 #define XML_ENDER "</digitizer>"
+
+static auto start_time = std::chrono::high_resolution_clock::now();
 
 void usage(){
     std::cout << "Usage of the script:\n";
@@ -149,6 +152,12 @@ void trace_to_root(pugi::xml_node &event , TTree *tree)
 }
 
 void progressBar(float progress , int id) {
+    
+    auto current_time = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(current_time - start_time).count();
+    
+    float rate = float(id)/float(elapsed);
+    
     int width = 50;
     int pos = static_cast<int>(width * progress);
 
@@ -158,7 +167,7 @@ void progressBar(float progress , int id) {
         else if (i == pos) std::cout << ">";
         else std::cout << " ";
     }
-    std::cout << "] \t" << int(progress * 100) << "%\t" << id << "\r";
+    std::cout << "] \t" << int(progress * 100) << "%\t" << id << "\t" << std::fixed << std::setprecision(0) << rate << " events/s \r";
     std::cout.flush();
 }
 
@@ -267,7 +276,8 @@ int main(int argc, char const *argv[])
         // clear string
         content.clear();
         // Create and configure ROOT file
-        TFile rootFile( root_file.c_str() , "RECREATE","", ROOT::CompressionSettings(ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD, 1));
+        TFile rootFile( root_file.c_str() , "RECREATE", "" , ROOT::CompressionSetting(ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD, 1));
+        // TFile rootFile( root_file.c_str() , "RECREATE");
         
 
         // Write settings to ROOT tree
