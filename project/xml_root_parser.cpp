@@ -145,7 +145,7 @@ void trace_to_root(pugi::xml_node &event , TTree *tree)
     values.clear();
 }
 
-void progressBar(float progress) {
+void progressBar(float progress , int id) {
     int width = 50;
     int pos = static_cast<int>(width * progress);
 
@@ -155,7 +155,7 @@ void progressBar(float progress) {
         else if (i == pos) std::cout << ">";
         else std::cout << " ";
     }
-    std::cout << "] \t" << int(progress * 100) << "%\r";
+    std::cout << "] \t" << int(progress * 100) << "%\t" << id << "\r";
     std::cout.flush();
 }
 
@@ -214,6 +214,8 @@ int main(int argc, char const *argv[])
     if ( root_directory.back() != '/' ) root_directory.append("/");
 
     int max_ID = readLastEventId(xml_path);
+
+    std::cout<<"Number of Events: \t"<< max_ID<<"\n";
 
     // Open the XML input file
     std::ifstream in(xml_path.c_str());
@@ -276,8 +278,8 @@ int main(int argc, char const *argv[])
         
         // Extract and store event data from XML
         for( pugi::xml_node event : events.children("event")){
-            float id = event.attribute("id").as_float();
-            progressBar(float(id)/float(max_ID));
+            int id = event.attribute("id").as_int();
+            progressBar(float(id)/float(max_ID) , id);
             // std::cout<<trace<<"\n";
             trace_to_root(event , tree);
         }
