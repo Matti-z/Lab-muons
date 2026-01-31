@@ -41,7 +41,15 @@ def import_root_settings(file):
     tree_name = "settings"
     tree = file[tree_name]
     
-    return tree["freq_hz"].array(library="np")[0] , tree["post_trigger"].array(library="np")[0] , tree["data_len"].array(library="np")[0]
+    settings = {
+        "freq_hz": tree["freq_hz"].array(library="np")[0],
+        "post_trigger": tree["post_trigger"].array(library="np")[0],
+        "data_len": tree["data_len"].array(library="np")[0],
+        "resolution": tree["resolution"].array(library="np")[0],
+        "volt_low": tree["volt_low"].array(library="np")[0],
+        "volt_high": tree["volt_high"].array(library="np")[0]
+    }
+    return settings
 
 def process_root_files(root_folder:str , csv_filename:str):
     ls = os.listdir(root_folder)
@@ -52,13 +60,16 @@ def process_root_files(root_folder:str , csv_filename:str):
         if root_folder[-1] != "/":
             root_folder += "/"
 
-
+    
     n = 0
     fname = root_folder + f"file_{n}.root"
-
+    
     
     with uproot.open(fname) as file: # type: ignore
-        frequency, post_trigger , data_len = import_root_settings(file)
+        dict = import_root_settings(file)
+        frequency = dict["freq_hz"]
+        post_trigger = dict["post_trigger"]
+        data_len = dict["data_len"]
         dT_ptrigg = data_len*(100 - post_trigger)/(frequency*100)
 
     while(os.path.isfile(fname)):
@@ -75,8 +86,24 @@ def process_root_files(root_folder:str , csv_filename:str):
 
         perc: int = int(round(n /  max_num * 30))
         string: str = (
-            "[" + "#" * perc + "-" * (30 - perc) + "]\t" + "\t" + str(i) + "\t" + str(len(file_list)))
+            "[" + "#" * perc + "-" * (30 - perc) + "]\t" + "\t" + str(n) + "\t" + str(max_num))
         print("\r" + string, end="", flush=True)
+
+
+def root_settings_to_csv( root_folder: str , csv_filename:str):
+    a = 0
+    n = 0
+    fname = root_folder + f"file_{n}.root"
+    if os.path.isfile(csv_filename):
+        raise ValueError("settings file already exists")
+    
+    with uproot.open(fname) as file: # type: ignore
+        dict = import_root_settings( file)
+        with open(csv_filename, 'x') as f:
+            for key, value in dict.items():
+                f.write(f"{key},{value}\n")
+
+
 
 if __name__ == "__main__":
     process_root_files("" , "try.csv")
