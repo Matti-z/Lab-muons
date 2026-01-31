@@ -3,8 +3,10 @@
 #include<sstream>
 #include<string>
 #include<pugixml.hpp>
+#include <cctype>
 #include<TFile.h>
 #include<TTree.h>
+
 
 
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
@@ -28,7 +30,6 @@ void usage(){
     std::cout << "| Branch: event [id] \t containing dataset of specific event with [id] = id\n";
     exit(0);
 }
-
 
 void setting_parser( std::string starter, std::ifstream& in , std::string& content){
     
@@ -144,11 +145,64 @@ void trace_to_root(pugi::xml_node &event , TTree *tree)
     values.clear();
 }
 
+void progressBar(float progress) {
+    int width = 50;
+    int pos = static_cast<int>(width * progress);
+
+    std::cout << "[";
+    for (int i = 0; i < width; ++i) {
+        if (i < pos) std::cout << "=";
+        else if (i == pos) std::cout << ">";
+        else std::cout << " ";
+    }
+    std::cout << "] \t" << int(progress * 100) << "%\r";
+    std::cout.flush();
+}
 
 
+int readLastEventId(const std::string& filename) {
+    std::ifstream file(filename, std::ios::binary);
+    if (!file) return -1;
 
+    file.seekg(0, std::ios::end);
+    std::streamoff pos = file.tellg();
 
+    constexpr size_t CHUNK = 4096;
+    std::string buffer;
 
+    while (pos > 0) {
+        size_t readSize = std::min(CHUNK, (size_t)pos);
+        pos -= readSize;
+        file.seekg(pos);
+
+        std::vector<char> chunk(readSize);
+        file.read(chunk.data(), readSize);
+
+        buffer.insert(0, chunk.data(), readSize);
+
+        // search from the back
+        auto evt = buffer.rfind("<event");
+        if (evt != std::string::npos) {
+            auto idPos = buffer.find("id=", evt);
+            if (idPos == std::string::npos)
+                return -1;
+
+            idPos += 3; // skip "id="
+
+            // skip optional quotes
+            if (buffer[idPos] == '"' || buffer[idPos] == '\'')
+                ++idPos;
+
+            int id = 0;
+            while (idPos < buffer.size() && std::isdigit(buffer[idPos])) {
+                id = id * 10 + (buffer[idPos] - '0');
+                ++idPos;
+            }
+            return id;
+        }
+    }
+    return -1;
+}
 
 int main(int argc, char const *argv[])
 {
@@ -158,6 +212,8 @@ int main(int argc, char const *argv[])
     std::cout<<xml_path<<"\n";
     std::string root_directory = (argc > 2) ? argv[2] : ".";
     if ( root_directory.back() != '/' ) root_directory.append("/");
+
+    int max_ID = readLastEventId(xml_path);
 
     // Open the XML input file
     std::ifstream in(xml_path.c_str());
@@ -210,6 +266,8 @@ int main(int argc, char const *argv[])
 
         // Write settings to ROOT tree
         add_settings_to_root(digitizer, settings);
+        std::cout<<"settings saved\n";\
+
         std::string tree_name = "events";
         TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
         tree ->AutoSave("100000");
@@ -218,7 +276,8 @@ int main(int argc, char const *argv[])
         
         // Extract and store event data from XML
         for( pugi::xml_node event : events.children("event")){
-            std::cout<<event.attribute("id").as_string()<<"\n";
+            float id = event.attribute("id").as_float();
+            progressBar(float(id)/float(max_ID));
             // std::cout<<trace<<"\n";
             trace_to_root(event , tree);
         }
@@ -230,6 +289,7 @@ int main(int argc, char const *argv[])
         // tree->Write();
         rootFile.Close();
     }
+    std::cout<<"-----------------------------------\t XML PARSED\t-----------------------------------\n";
     return 0;
 }
 
