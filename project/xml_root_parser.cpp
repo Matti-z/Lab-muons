@@ -8,18 +8,18 @@
 
 
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
+// g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml
 #define LINE_LIMIT 100000
 #define delta 500
 #define XML_ENDER "</digitizer>"
 
-// comp 0 line_lim 1e7 16min 45s
-// comp 9 line_lim 1e7 
 void usage(){
     std::cout << "Usage of the script:\n";
     std::cout << "./parser <xml path> <root path>\n\n\n";
     std::cout << "the root path will be the directory in which it will be saved different root files, each with a structure:\n";
     std::cout << "Tree: settings \t containing all useful characteristics of the dataset\n";
     std::cout << "|Branch: freq_hz\t containing frequency of data taken\n";
+    std::cout << "|Branch: resolution\t containing bits of precisions in Y axis\n";
     std::cout << "|Branch: volt_low \t containing lowest voltage\n";
     std::cout << "|Branch: volt_high \t containing highest voltage\n";
     std::cout << "|Branch: post_trigger \t containing post-trigger percentage\n";
@@ -46,6 +46,7 @@ void setting_parser( std::string starter, std::ifstream& in , std::string& conte
 void add_settings_to_root(pugi::xml_document &digitizer, pugi::xml_document &settings)
 {
     double freq_hz;
+    int resolution;
     float volt_low;
     float volt_high;
     float postTrg_float;
@@ -54,6 +55,7 @@ void add_settings_to_root(pugi::xml_document &digitizer, pugi::xml_document &set
     // ROOT INSERTION
     TTree tree("settings", "settings-of-the-dataset");
     tree.Branch("freq_hz", &freq_hz, "frequency_Hz/D");
+    tree.Branch("resolution" , &resolution , "resolution_y_axis/I");
     tree.Branch("volt_low", &volt_low, "lowest-voltage_V/F");
     tree.Branch("volt_high", &volt_high, "highest-voltage_V/F");
     tree.Branch("post_trigger", &postTrg_float, "post-trigger_percentage/F");
@@ -65,6 +67,8 @@ void add_settings_to_root(pugi::xml_document &digitizer, pugi::xml_document &set
     pugi::xml_node volt_limit = digitizer.child("digitizer").child("voltagerange");
     volt_low = volt_limit.attribute("low").as_float();
     volt_high = volt_limit.attribute("hi").as_float();
+    pugi::xml_node res = digitizer.child("digitizer").child("resolution");
+    resolution = res.attribute("bits").as_int();
 
 
 
