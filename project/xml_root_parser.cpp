@@ -12,7 +12,10 @@
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml
 #define LINE_LIMIT 100000
-#define delta 500
+#define DELTA 500
+#define AUTO_FLUSH 50000
+#define AUTO_SAVE 100000
+
 #define XML_ENDER "</digitizer>"
 
 void usage(){
@@ -136,7 +139,7 @@ void trace_to_root(pugi::xml_node &event , TTree *tree)
             }
             if (x < min) min = x;
             if (x > max) max = x;
-            if (max - min > delta) save = true;
+            if (max - min > DELTA) save = true;
         }
         values.push_back(x);
     }
@@ -244,6 +247,7 @@ int main(int argc, char const *argv[])
     // Variables for event processing
     
     int counter = 0;
+    std::cout<<"settings parsed\n";
     
     // Process events until end of file
     while( in.peek() != EOF ){
@@ -268,12 +272,11 @@ int main(int argc, char const *argv[])
 
         // Write settings to ROOT tree
         add_settings_to_root(digitizer, settings);
-        std::cout<<"settings saved\n";\
 
         std::string tree_name = "events";
         TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
-        tree ->AutoSave("100000");
-        tree ->SetAutoFlush(50000);
+        tree->SetAutoSave(AUTO_SAVE);
+        tree ->SetAutoFlush((int)AUTO_FLUSH);
 
         
         // Extract and store event data from XML
