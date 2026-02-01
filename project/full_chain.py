@@ -9,9 +9,9 @@ from drive_sync import sync_local_folder_to_drive
 default_dir = str(Path(".").absolute()).split("/Lab-muons")[0]+"/Lab-muons/"
 universal_dir = lambda path: default_dir + path
 
-xml_path = universal_dir("big_data/19_01_2026_10_27.xml")
+xml_path = universal_dir("big_data/9_1_26_5_45.xml")
 xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
-csv_path = universal_dir("Data/timestamp/"+xml_filename+".csv")
+csv_path = universal_dir("Data/timestamp/"+"old"+".csv")
 csv_settings_path = universal_dir("Data/settings/"+ xml_filename + ".csv")
 
 
@@ -24,18 +24,16 @@ os.makedirs(os.path.dirname(xml_path), exist_ok=True)
 os.makedirs(os.path.dirname(root_path), exist_ok=True)
 os.makedirs(os.path.dirname(csv_settings_path), exist_ok=True)
 
-print(csv_settings_path)
 
-# Best approach for calling ./parser with arguments
 result = subprocess.run([universal_dir("project/parser"), xml_path, root_path], capture_output=False)
 if result.returncode != 0:
     print(result.stderr)
 process_root_files(root_path , csv_path)
 root_settings_to_csv( root_path , csv_settings_path)
 
-subprocess.run(['git', 'add', universal_dir("Data/timestamp/*")], capture_output=True)
-subprocess.run(['git', 'commit', '-m', 'Update timestamp data ' + xml_filename], capture_output=True)
-subprocess.run(['git', 'push'], capture_output=True)
+subprocess.run(['git', 'add', universal_dir("Data/timestamp/*") , universal_dir("Data/settings/*")], capture_output=False)
+subprocess.run(['git', 'commit', '-m', 'Update timestamp data ' + xml_filename], capture_output=False)
+subprocess.run(['git', 'push'], capture_output=False)
 
 
 

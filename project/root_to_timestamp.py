@@ -54,16 +54,13 @@ def process_root_files(root_folder:str , csv_filename:str):
     if len(ls) == 0:
         print("Empty directory: \t" , root_folder)
         exit(-1)
-    max_num = max([int(f.split('_')[1].split('.')[0]) for f in ls if f.startswith('file_') and f.endswith('.root')])
     if os.path.isfile(csv_filename):
         raise ValueError("csv path inserted is already a file")
     if len(root_folder) != 0:
         if root_folder[-1] != "/":
             root_folder += "/"
 
-    
-    n = 0
-    fname = root_folder + f"file_{n}.root"
+    fname = root_folder + f"file.root"
     
     
     with uproot.open(fname) as file: # type: ignore
@@ -73,33 +70,32 @@ def process_root_files(root_folder:str , csv_filename:str):
         data_len = dict["data_len"]
         dT_ptrigg = data_len*(100 - post_trigger)/(frequency*100)
 
-    while(os.path.isfile(fname)):
-        with uproot.open(fname) as file: # type: ignore
-            tree = file["events"]
-            matrix = tree["events"].array(library="np") # type: ignore
-            print(matrix)
-            print(matrix.shape)
-            input()
-            for vec in matrix:
+
+    with uproot.open(fname) as file: # type: ignore
+        tree = file["events"]
+        n_entries = tree["events"].num_entries # type: ignore
+        counter = 0
+        for batch in tree.iterate(step_size=1000, library="np"):# type: ignore
+
+            if not all(len(v) == len(batch["events"][0]) for v in batch["events"]):# type: ignore
+                    raise ValueError("Not all vectors have the same length.")
+            
+            for vec in batch["events"]: # type: ignore
+                counter +=1
                 if max(vec) - min(vec) > delta:
                     timestamp_calculator(vec , frequency , dT_ptrigg, csv_filename)
-                branch_name = f"event_{id}"
-        n+=1
-        fname = root_folder + f"file_{n}.root"
 
-        perc: int = int(round(n /  max_num * 30))
-        string: str = (
-            "[" + "#" * perc + "-" * (30 - perc) + "]\t" + "\t" + str(n) + "\t" + str(max_num))
-        print("\r" + string, end="", flush=True)
+                perc: int = int(round(counter /  n_entries * 30))
+                string: str = (
+                    "[" + "#" * perc + " " * (30 - perc) + "]\t" + "\t" + str(counter) + "\t" + str(n_entries))
+                print("\r" + string, end="", flush=True)
 
 
 def root_settings_to_csv( root_folder: str , csv_filename:str):
-    a = 0
-    n = 0
     if len(os.listdir(root_folder)) == 0:
         print("Empty directory: \t" , root_folder)
         exit(-1)
-    fname = root_folder + f"file_{n}.root"
+    fname = root_folder + f"file.root"
     if os.path.isfile(csv_filename):
         raise ValueError("settings file already exists")
     
@@ -112,5 +108,5 @@ def root_settings_to_csv( root_folder: str , csv_filename:str):
 
 
 if __name__ == "__main__":
-    process_root_files("big_data/root/19_01_2026_10_27" , "try.csv")
+    root_settings_to_csv("big_data/root/9_1_26_5_45/" , "Data/settings/9_1_26_5_45.csv")
     
