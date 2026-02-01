@@ -33,9 +33,7 @@ def append_csv(filename: str, value: float):
     
 
 
-def import_root_file(tree , branch_name: str):
-    arr = tree[branch_name].array(library="np")
-    return arr[0]
+
 
 def import_root_settings(file):
     tree_name = "settings"
@@ -53,6 +51,9 @@ def import_root_settings(file):
 
 def process_root_files(root_folder:str , csv_filename:str):
     ls = os.listdir(root_folder)
+    if len(ls) == 0:
+        print("Empty directory: \t" , root_folder)
+        exit(-1)
     max_num = max([int(f.split('_')[1].split('.')[0]) for f in ls if f.startswith('file_') and f.endswith('.root')])
     if os.path.isfile(csv_filename):
         raise ValueError("csv path inserted is already a file")
@@ -75,9 +76,11 @@ def process_root_files(root_folder:str , csv_filename:str):
     while(os.path.isfile(fname)):
         with uproot.open(fname) as file: # type: ignore
             tree = file["events"]
-            tree_keys = tree.keys()
-            for branch_name in tree_keys:
-                vec = import_root_file(tree , branch_name)
+            matrix = tree["events"].array(library="np") # type: ignore
+            print(matrix)
+            print(matrix.shape)
+            input()
+            for vec in matrix:
                 if max(vec) - min(vec) > delta:
                     timestamp_calculator(vec , frequency , dT_ptrigg, csv_filename)
                 branch_name = f"event_{id}"
@@ -93,6 +96,9 @@ def process_root_files(root_folder:str , csv_filename:str):
 def root_settings_to_csv( root_folder: str , csv_filename:str):
     a = 0
     n = 0
+    if len(os.listdir(root_folder)) == 0:
+        print("Empty directory: \t" , root_folder)
+        exit(-1)
     fname = root_folder + f"file_{n}.root"
     if os.path.isfile(csv_filename):
         raise ValueError("settings file already exists")
@@ -106,5 +112,5 @@ def root_settings_to_csv( root_folder: str , csv_filename:str):
 
 
 if __name__ == "__main__":
-    process_root_files("" , "try.csv")
+    process_root_files("big_data/root/19_01_2026_10_27" , "try.csv")
     
