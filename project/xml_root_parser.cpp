@@ -111,37 +111,39 @@ void event_parser( std::ifstream& in , std::string& content){
 }
 
 
-void trace_to_root(pugi::xml_node &event , std::vector<short> values , TTree *tree)
+void trace_to_root(pugi::xml_node &event , std::vector<short>& values , TTree *tree)
 {
     std::string trace;
     trace = event.child("trace").text().as_string();
-    
+
     std::istringstream iss(trace);
 
     int x;
-    
-    values.clear();
-    
-    
 
     // Parse trace values into vector
     int min = 0;
     int max = 0;
     bool save = false;
-    while (iss >> x )
+    while (iss >> x)
     {
-        if(!save){
-            if ((min == 0) && (max ==0)){
-            min = x;
-            max = x;
+        if (!save)
+        {
+            if ((min == 0) && (max == 0))
+            {
+                min = x;
+                max = x;
             }
-            if (x < min) min = x;
-            if (x > max) max = x;
-            if (max - min > DELTA) save = true;
+            if (x < min)
+                min = x;
+            if (x > max)
+                max = x;
+            if (max - min > DELTA)
+                save = true;
         }
         values.push_back(x);
     }
-    if (save) tree->Fill();
+    if (save)
+        tree->Fill();
 }
 
 void progressBar(float progress , int id) {
@@ -216,11 +218,13 @@ int main(int argc, char const *argv[])
     std::string xml_path = (argc > 1) ? argv[1] : "Lab-muons/digitizer/prova_xml.xml";
     std::cout<<xml_path<<"\n";
     std::string root_directory = (argc > 2) ? argv[2] : ".";
+
+
     if ( root_directory.back() != '/' ) root_directory.append("/");
+    std::string filename = xml_path.substr(xml_path.find_last_of("/\\") + 1);
+    filename = filename.substr(0, filename.find_last_of("."));
 
-    int max_ID = readLastEventId(xml_path);
-
-    std::cout<<"Number of Events: \t"<< max_ID<<"\n";
+    
 
     // Open the XML input file
     std::ifstream in(xml_path.c_str());
@@ -230,8 +234,10 @@ int main(int argc, char const *argv[])
         exit(0);
     }
 
-    // Initialize ROOT output file path
-    std::string root_file = root_directory+"try.root";
+    int max_ID = readLastEventId(xml_path);
+
+    std::cout<<"Number of Events: \t"<< max_ID<<"\n";
+
 
     // Parse digitizer settings from XML
     setting_parser( "<digitizer>" , in , content);
@@ -245,18 +251,38 @@ int main(int argc, char const *argv[])
     
     settings.load_string(content.c_str());
     content.clear();
-
-    // Variables for event processing
     
-    int counter = 0;
     std::cout<<"settings parsed\n";
+
+    
+    
+
+
+    // string definition for root file
+    std::string root_file = root_directory + "file.root";
+    std::string tree_name = "events";
+    std::string branch_name = "events";
+
+    // definition vector for branch
+    std::vector<short> values; 
+    
+    
+    // initializing TTree and TBranch
+    // TFile rootFile( root_file.c_str() , "RECREATE", "" , ROOT::CompressionSettings(ROOT::kZSTD, 1));
+    TFile rootFile( root_file.c_str() , "RECREATE");
+    TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
+    TBranch *branch = tree->Branch(branch_name.c_str(), &values);
+
+    tree->SetAutoSave(AUTO_SAVE);
+    tree ->SetAutoFlush((int)AUTO_FLUSH);
+
+    // Write settings to ROOT tree
+    add_settings_to_root(digitizer, settings);
     
     // Process events until end of file
     while( in.peek() != EOF ){
 
         content += "<events>\n",
-        // Generate output ROOT file name
-        root_file = root_directory + "file_" + counter + ".root";
         event_parser(in , content);
         content += "</events>\n";
 
@@ -268,22 +294,7 @@ int main(int argc, char const *argv[])
         pugi::xml_node events = history.child("events");
         // clear string
         content.clear();
-        // Create and configure ROOT file
-        // TFile rootFile( root_file.c_str() , "RECREATE", "" , ROOT::CompressionSettings(ROOT::kZSTD, 1));
-        TFile rootFile( root_file.c_str() , "RECREATE");
         
-
-        // Write settings to ROOT tree
-        add_settings_to_root(digitizer, settings);
-
-        std::string tree_name = "events";
-        std::string branch_name = "events";
-        std::vector<short> values;  
-
-        TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
-        TBranch *branch = tree->Branch(branch_name.c_str(), &values);
-        tree->SetAutoSave(AUTO_SAVE);
-        tree ->SetAutoFlush((int)AUTO_FLUSH);
 
         
         // Extract and store event data from XML
@@ -292,15 +303,17 @@ int main(int argc, char const *argv[])
             progressBar(float(id)/float(max_ID) , id);
             // std::cout<<trace<<"\n";
             trace_to_root(event , values , tree);
+            values.clear();
+
         }
+
         
-        
-        // Write tree to file and close
-        counter ++;
-        tree->Write("", TObject::kOverwrite);
-        // tree->Write();
-        rootFile.Close();
     }
+
+    std::cout.flush();
+    // Write tree to file and close
+    tree->Write("", TObject::kOverwrite);
+    rootFile.Close();
     std::cout<<"-----------------------------------\t XML PARSED\t-----------------------------------\n";
     return 0;
 }
