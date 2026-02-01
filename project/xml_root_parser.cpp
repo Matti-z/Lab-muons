@@ -14,8 +14,8 @@
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml
 #define LINE_LIMIT 100000
 #define DELTA 500
-#define AUTO_FLUSH 25000
-#define AUTO_SAVE 50000
+#define AUTO_FLUSH 50000
+#define AUTO_SAVE 10000
 
 #define XML_ENDER "</digitizer>"
 
@@ -111,23 +111,18 @@ void event_parser( std::ifstream& in , std::string& content){
 }
 
 
-void trace_to_root(pugi::xml_node &event , TTree *tree)
+void trace_to_root(pugi::xml_node &event , std::vector<short> values , TTree *tree)
 {
     std::string trace;
     trace = event.child("trace").text().as_string();
-    std::string id = event.attribute("id").as_string();
-    
-
-    std::string branch_name = "event_"+id;
     
     std::istringstream iss(trace);
 
     int x;
-    std::vector<short> values;  
+    
     values.clear();
     
-    // std::string branch_desc = "event data of id: " + id +"/I";
-    TBranch *branch = tree->Branch(branch_name.c_str(), &values);
+    
 
     // Parse trace values into vector
     int min = 0;
@@ -147,8 +142,6 @@ void trace_to_root(pugi::xml_node &event , TTree *tree)
         values.push_back(x);
     }
     if (save) tree->Fill();
-    else tree -> GetListOfBranches()->Remove(branch);
-    values.clear();
 }
 
 void progressBar(float progress , int id) {
@@ -276,15 +269,19 @@ int main(int argc, char const *argv[])
         // clear string
         content.clear();
         // Create and configure ROOT file
-        TFile rootFile( root_file.c_str() , "RECREATE", "" , ROOT::CompressionSetting(ROOT::RCompressionSetting::EAlgorithm::EValues::kZSTD, 1));
-        // TFile rootFile( root_file.c_str() , "RECREATE");
+        // TFile rootFile( root_file.c_str() , "RECREATE", "" , ROOT::CompressionSettings(ROOT::kZSTD, 1));
+        TFile rootFile( root_file.c_str() , "RECREATE");
         
 
         // Write settings to ROOT tree
         add_settings_to_root(digitizer, settings);
 
         std::string tree_name = "events";
+        std::string branch_name = "events";
+        std::vector<short> values;  
+
         TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
+        TBranch *branch = tree->Branch(branch_name.c_str(), &values);
         tree->SetAutoSave(AUTO_SAVE);
         tree ->SetAutoFlush((int)AUTO_FLUSH);
 
@@ -294,7 +291,7 @@ int main(int argc, char const *argv[])
             int id = event.attribute("id").as_int();
             progressBar(float(id)/float(max_ID) , id);
             // std::cout<<trace<<"\n";
-            trace_to_root(event , tree);
+            trace_to_root(event , values , tree);
         }
         
         
