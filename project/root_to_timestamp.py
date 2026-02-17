@@ -35,7 +35,7 @@ def append_csv(filename: str, value: float):
 
 
 
-def import_root_settings(file):
+def define_settings_dict(file):
     tree_name = "settings"
     tree = file[tree_name]
     
@@ -45,7 +45,8 @@ def import_root_settings(file):
         "data_len": tree["data_len"].array(library="np")[0],
         "resolution": tree["resolution"].array(library="np")[0],
         "volt_low": tree["volt_low"].array(library="np")[0],
-        "volt_high": tree["volt_high"].array(library="np")[0]
+        "volt_high": tree["volt_high"].array(library="np")[0],
+        "delta": delta
     }
     return settings
 
@@ -64,7 +65,7 @@ def process_root_files(root_folder:str , csv_filename:str):
     
     
     with uproot.open(fname) as file: # type: ignore
-        dict = import_root_settings(file)
+        dict = define_settings_dict(file)
         frequency = dict["freq_hz"]
         post_trigger = dict["post_trigger"]
         data_len = dict["data_len"]
@@ -100,7 +101,7 @@ def root_settings_to_csv( root_folder: str , csv_filename:str):
         raise ValueError("settings file already exists")
     
     with uproot.open(fname) as file: # type: ignore
-        dict = import_root_settings( file)
+        dict = define_settings_dict( file)
         with open(csv_filename, 'x') as f:
             for key, value in dict.items():
                 f.write(f"{key},{value}\n")
