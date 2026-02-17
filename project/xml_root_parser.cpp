@@ -8,14 +8,13 @@
 #include<TTree.h>
 #include <iomanip>
 
-// TODO: al posto di creare infinite branch, immagazzina tutto in una singola branch (AAAAAAA)
 
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
 // g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml
 #define LINE_LIMIT 100000
 #define DELTA 500
-#define AUTO_FLUSH 50000
-#define AUTO_SAVE 10000
+#define AUTO_FLUSH 500000
+#define AUTO_SAVE 100000
 
 #define XML_ENDER "</digitizer>"
 
