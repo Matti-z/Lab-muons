@@ -3,7 +3,7 @@ import os.path
 import numpy as np
 import matplotlib.pyplot as plt
 
-delta = 500
+DELTA = 500
 
 def timestamp_calculator(vec:np.ndarray , frequency:float , dT_ptrigg: float , csv_filename:str):
     if not os.path.isfile(csv_filename):
@@ -46,7 +46,7 @@ def define_settings_dict(file):
         "resolution": tree["resolution"].array(library="np")[0],
         "volt_low": tree["volt_low"].array(library="np")[0],
         "volt_high": tree["volt_high"].array(library="np")[0],
-        "delta": delta
+        "delta": DELTA
     }
     return settings
 
@@ -83,7 +83,7 @@ def process_root_files(root_folder:str , csv_filename:str):
             
             for vec in batch["events"]: # type: ignore
                 counter +=1
-                if max(vec) - min(vec) > delta:
+                if max(vec) - min(vec) > DELTA:
                     timestamp_calculator(vec , frequency , dT_ptrigg, csv_filename)
 
                 perc: int = int(round(counter /  n_entries * 30))
