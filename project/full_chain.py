@@ -9,9 +9,9 @@ from drive_sync import sync_local_folder_to_drive
 default_dir = str(Path(".").absolute()).split("/Lab-muons")[0]+"/Lab-muons/"
 universal_dir = lambda path: default_dir + path
 
-xml_path = universal_dir("big_data/9_1_26_5_45.xml")
+xml_path = universal_dir("big_data/29_01_2026_17_20.xml")
 xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
-csv_path = universal_dir("Data/timestamp/"+"old"+".csv")
+csv_path = universal_dir("Data/timestamp/"+xml_filename+".csv")
 csv_settings_path = universal_dir("Data/settings/"+ xml_filename + ".csv")
 
 
