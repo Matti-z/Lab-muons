@@ -1,0 +1,7 @@
+freq_hz,250000000.0
+post_trigger,100.0
+data_len,512
+resolution,12
+volt_low,0.0
+volt_high,2.0
+delta,500
