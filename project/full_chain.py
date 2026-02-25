@@ -9,7 +9,7 @@ from root_to_timestamp import process_root_files, root_settings_to_csv
 default_dir = str(Path(".").absolute()).split("/Lab-muons")[0]+"/Lab-muons/"
 universal_dir = lambda path: default_dir + path
 
-xml_path = universal_dir("big_data/11_02_2026_17_52.xml")
+xml_path = universal_dir("big_data/23_02_2026_11_08.xml")
 xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
 csv_path = universal_dir("Data/timestamp/"+xml_filename+".csv")
 csv_settings_path = universal_dir("Data/settings/"+ xml_filename + ".csv")
