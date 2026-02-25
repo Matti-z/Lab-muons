@@ -166,14 +166,14 @@ void progressBar(float progress , int id) {
 }
 
 
-int readLastEventId(const std::string& filename) {
+int readLastEventId(const std::string& filename , int size) {
     std::ifstream file(filename, std::ios::binary);
     if (!file) return -1;
 
     file.seekg(0, std::ios::end);
     std::streamoff pos = file.tellg();
 
-    constexpr size_t CHUNK = 4096;
+    size_t CHUNK = size;
     std::string buffer;
 
     while (pos > 0) {
@@ -233,9 +233,7 @@ int main(int argc, char const *argv[])
         exit(0);
     }
 
-    int max_ID = readLastEventId(xml_path);
-
-    std::cout<<"Number of Events: \t"<< max_ID<<"\n";
+    
 
 
     // Parse digitizer settings from XML
@@ -250,6 +248,14 @@ int main(int argc, char const *argv[])
     
     settings.load_string(content.c_str());
     content.clear();
+
+    int size;
+    pugi::xml_node window = settings.child("settings").child("window");
+    size = window.attribute("size").as_int();
+
+    int max_ID = readLastEventId(xml_path , size);
+
+    std::cout<<"Number of Events: \t"<< max_ID<<"\n";
     
     std::cout<<"settings parsed\n";
 
