@@ -79,7 +79,8 @@ def process_root_files(root_folder:str , csv_filename:str):
         for batch in tree.iterate(step_size=1000, library="np"):# type: ignore
 
             if not all(len(v) == len(batch["events"][0]) for v in batch["events"]):# type: ignore
-                    raise ValueError("Not all vectors have the same length.")
+                    # raise ValueError("Not all vectors have the same length.")
+                    continue
             
             for vec in batch["events"]: # type: ignore
                 counter +=1
@@ -109,5 +110,19 @@ def root_settings_to_csv( root_folder: str , csv_filename:str):
 
 
 if __name__ == "__main__":
-    root_settings_to_csv("big_data/root/9_1_26_5_45/" , "Data/settings/9_1_26_5_45.csv")
-    
+    # from pathlib import Path
+
+
+    # default_dir = str(Path(".").absolute()).split("/Lab-muons")[0]+"/Lab-muons/"
+    # universal_dir = lambda path: default_dir + path
+    # xml_path = universal_dir("big_data/error_prop_700ns.xml")
+    # xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
+    # csv_path = universal_dir("Data/timestamp/"+xml_filename+".csv")
+    # csv_settings_path = universal_dir("Data/settings/"+ xml_filename + ".csv")
+
+
+
+    # root_path = universal_dir("big_data/root/"+xml_filename+"/")
+
+    # process_root_files(root_path , csv_path)
+    a = 0
