@@ -50,18 +50,22 @@ def define_settings_dict(file):
     }
     return settings
 
-def process_root_files(root_folder:str , csv_filename:str):
+def process_root_files(root_folder:str , csv_folder:str , filename: str):
     ls = os.listdir(root_folder)
     if len(ls) == 0:
         print("Empty directory: \t" , root_folder)
         exit(-1)
-    if os.path.isfile(csv_filename):
+
+    csv_path = csv_folder + "/" + filename + ".csv"
+    if os.path.isfile(csv_path):
         raise ValueError("csv path inserted is already a file")
     if len(root_folder) != 0:
         if root_folder[-1] != "/":
             root_folder += "/"
 
     fname = root_folder + f"file.root"
+
+    
     
     
     with uproot.open(fname) as file: # type: ignore
@@ -85,7 +89,7 @@ def process_root_files(root_folder:str , csv_filename:str):
             for vec in batch["events"]: # type: ignore
                 counter +=1
                 if max(vec) - min(vec) > DELTA:
-                    timestamp_calculator(vec , frequency , dT_ptrigg, csv_filename)
+                    timestamp_calculator(vec , frequency , dT_ptrigg, csv_path)
 
                 perc: int = int(round(counter /  n_entries * 30))
                 string: str = (
@@ -93,17 +97,19 @@ def process_root_files(root_folder:str , csv_filename:str):
                 print("\r" + string, end="", flush=True)
 
 
-def root_settings_to_csv( root_folder: str , csv_filename:str):
+def root_settings_to_csv( root_folder: str , csv_folder:str , filename: str):
     if len(os.listdir(root_folder)) == 0:
         print("Empty directory: \t" , root_folder)
         exit(-1)
     fname = root_folder + f"file.root"
-    if os.path.isfile(csv_filename):
+    csv_path = csv_folder + "/" + filename + "_cfg.csv"
+
+    if os.path.isfile(csv_path):
         raise ValueError("settings file already exists")
     
     with uproot.open(fname) as file: # type: ignore
         dict = define_settings_dict( file)
-        with open(csv_filename, 'x') as f:
+        with open(csv_path, 'x') as f:
             for key, value in dict.items():
                 f.write(f"{key},{value}\n")
 

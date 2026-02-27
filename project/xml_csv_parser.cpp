@@ -292,13 +292,6 @@ int main(int argc, char const *argv[])
     
     std::cout<<"settings parsed\n";
 
-    
-    
-
-
-
-
-
 
     // definition vector for timestamps
     std::vector<double> values; 
