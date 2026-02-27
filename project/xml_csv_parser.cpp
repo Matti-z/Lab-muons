@@ -2,19 +2,18 @@
 #include<fstream>
 #include<sstream>
 #include<string>
+#include<vector>
 #include<pugixml.hpp>
 #include <cctype>
-#include<TFile.h>
-#include<TTree.h>
+#include <chrono>
 #include <iomanip>
 
 
-// g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
-// g++ -o parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml
+// g++ -o csv_parser xml_csv_parser.cpp -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
+// g++ -o csv_parser xml_csv_parser.cpp -lpugixml
 #define LINE_LIMIT 100000
 #define DELTA 500
-#define AUTO_FLUSH 500000
-#define AUTO_SAVE 100000
+
 
 #define XML_ENDER "</digitizer>"
 
@@ -22,17 +21,11 @@ static auto start_time = std::chrono::high_resolution_clock::now();
 
 void usage(){
     std::cout << "Usage of the script:\n";
-    std::cout << "./parser <xml path> <root path>\n\n\n";
-    std::cout << "the root path will be the directory in which it will be saved different root files, each with a structure:\n";
-    std::cout << "Tree: settings \t containing all useful characteristics of the dataset\n";
-    std::cout << "|Branch: freq_hz\t containing frequency of data taken\n";
-    std::cout << "|Branch: resolution\t containing bits of precisions in Y axis\n";
-    std::cout << "|Branch: volt_low \t containing lowest voltage\n";
-    std::cout << "|Branch: volt_high \t containing highest voltage\n";
-    std::cout << "|Branch: post_trigger \t containing post-trigger percentage\n";
-    std::cout << "|Branch: data_len \t containing data length\n";
-    std::cout << "Tree:event \t tree containing all the data";
-    std::cout << "| Branch: event [id] \t containing dataset of specific event with [id] = id\n";
+    std::cout << "./parser <xml path> <csv path> <cfg path>\n\n\n";
+    std::cout << "the csv file will contain timestamps of signal peaks detected in each event\n";
+    std::cout << "CSV Structure:\n";
+    std::cout << "Single column containing timestamps (in seconds) measured from the end to the rising edge of the signal\n";
+    std::cout << "Each row represents a timestamp detected in a single event\n";
     exit(0);
 }
 
@@ -49,7 +42,7 @@ void setting_parser( std::string starter, std::ifstream& in , std::string& conte
     content += line + "\n";
 }
 
-void add_settings_to_csv(pugi::xml_document &digitizer, pugi::xml_document &settings)
+void settings_to_csv(pugi::xml_document &digitizer, pugi::xml_document &settings , std::ofstream& cfg)
 {
     double freq_hz;
     int resolution;
@@ -57,15 +50,6 @@ void add_settings_to_csv(pugi::xml_document &digitizer, pugi::xml_document &sett
     float volt_high;
     float postTrg_float;
     int size;
-
-    // ROOT INSERTION
-    TTree tree("settings", "settings-of-the-dataset");
-    tree.Branch("freq_hz", &freq_hz, "frequency_Hz/D");
-    tree.Branch("resolution" , &resolution , "resolution_y_axis/I");
-    tree.Branch("volt_low", &volt_low, "lowest-voltage_V/F");
-    tree.Branch("volt_high", &volt_high, "highest-voltage_V/F");
-    tree.Branch("post_trigger", &postTrg_float, "post-trigger_percentage/F");
-    tree.Branch("data_len", &size, "data-lenght/I");
 
     // DIGITIZER CLASS
     pugi::xml_node freq = digitizer.child("digitizer").child("frequency");
@@ -85,9 +69,16 @@ void add_settings_to_csv(pugi::xml_document &digitizer, pugi::xml_document &sett
     pugi::xml_node window = settings.child("settings").child("window");
     size = window.attribute("size").as_int();
 
-    
-    tree.Fill();
-    tree.Write();
+    std::string full_cfg = 
+    "frequency[hz]," + std::to_string(freq_hz) + ",\n" +
+    "resolution[bytes]," + std::to_string(resolution) + ",\n" +
+    "volt_low[V]," + std::to_string(volt_low) + ",\n" +
+    "volt_high[V]," + std::to_string(volt_high) + ",\n" +
+    "postTrg[%]," + std::to_string(postTrg_float) + ",\n" +
+    "size[bits]," + std::to_string(size) + ",\n" +
+    "delta[bits]," + std::to_string(DELTA) + ",\n";
+
+    cfg << full_cfg;
 
 }
 
@@ -110,19 +101,22 @@ void event_parser( std::ifstream& in , std::string& content){
 }
 
 
-void trace_to_root(pugi::xml_node &event , std::vector<short>& values , TTree *tree)
+void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& values , double freq , int size)
 {
     std::string trace;
     trace = event.child("trace").text().as_string();
 
     std::istringstream iss(trace);
-
+    std::vector<short> trace_vector;
+    
     int x;
+    int last_trace_index = size-1;
 
     // Parse trace values into vector
     int min = 0;
     int max = 0;
     bool save = false;
+    bool trigger = false;
     while (iss >> x)
     {
         if (!save)
@@ -139,15 +133,31 @@ void trace_to_root(pugi::xml_node &event , std::vector<short>& values , TTree *t
             if (max - min > DELTA)
                 save = true;
         }
-        values.push_back(x);
+        trace_vector.push_back(x);
+    }
+    if (trace_vector.size() != size){
+        std::cout << "trace of unexpected size detected\n";
+        exit(0);
     }
     if (save)
-        tree->Fill();
+        for( int traceIndex = size-1 ; traceIndex >=0 ; traceIndex-- ){
+            double timestamp = double(last_trace_index - traceIndex)/freq;
+            if( trace_vector[traceIndex]< max - DELTA && !trigger){
+                values.push_back(timestamp);
+                trigger = true;
+            }
+            if ( trace_vector[traceIndex] > max - DELTA && trigger) trigger = false;
+        }
+    trace_vector.clear();
 }
 
-void trace_to_csv(pugi::xml_node &event , std::vector<short>& values){
-
+void timestamp_to_csv( std::ofstream& out, std::vector<double>& values){
+    for( int i = 0 ; i < values.size(); i++){
+        out << values[i] << ",\n";
+    }
 }
+
+
 
 void progressBar(float progress , int id) {
     
@@ -218,22 +228,34 @@ int main(int argc, char const *argv[])
 {
 
     if (argc <= 1) usage();
-    std::string xml_path = (argc > 1) ? argv[1] : "Lab-muons/digitizer/prova_xml.xml";
+    std::string xml_path = (argv[1] == "debug") ? argv[1] : "../big_data/16_1_2026_16_55.xml";
     std::cout<<xml_path<<"\n";
-    std::string root_directory = (argc > 2) ? argv[2] : ".";
+    std::string csv_directory = (argc > 2) ? argv[2] : ".";
+    std::string cfg_directory = (argc > 3) ? argv[3] : ".";
 
 
-    if ( root_directory.back() != '/' ) root_directory.append("/");
+    if ( csv_directory.back() != '/' ) csv_directory.append("/");
+    if ( cfg_directory.back() != '/' ) cfg_directory.append("/");
     std::string filename = xml_path.substr(xml_path.find_last_of("/\\") + 1);
     filename = filename.substr(0, filename.find_last_of("."));
+
+
+    std::string csv_file = csv_directory + filename + ".csv";
+    std::string cfg_file = cfg_directory + filename + "_cfg.csv";
 
     
 
     // Open the XML input file
     std::ifstream in(xml_path.c_str());
+    std::ofstream out( csv_file.c_str());
+    std::ofstream cfg( cfg_file.c_str());
     std::string content;
     if (!in.is_open()){
-        std::cout << "File not Found\n";
+        std::cout << "XML not Found\n";
+        exit(0);
+    }
+    if (!out.is_open()){
+        std::cout << "CSV not Found\n";
         exit(0);
     }
 
@@ -257,6 +279,13 @@ int main(int argc, char const *argv[])
     pugi::xml_node window = settings.child("settings").child("window");
     size = window.attribute("size").as_int();
 
+    double freq_hz;
+    pugi::xml_node freq = digitizer.child("digitizer").child("frequency");
+    freq_hz = freq.attribute("hz").as_float();
+
+    settings_to_csv( digitizer , settings , cfg);
+
+
     int max_ID = readLastEventId(xml_path , size);
 
     std::cout<<"Number of Events: \t"<< max_ID<<"\n";
@@ -267,31 +296,13 @@ int main(int argc, char const *argv[])
     
 
 
-    // string definition for root file
-    std::string root_file = root_directory + "file.root";
-    std::string tree_name = "events";
-    std::string branch_name = "events";
 
 
-    double freq_hz;
-    pugi::xml_node freq = digitizer.child("digitizer").child("frequency");
-    freq_hz = freq.attribute("hz").as_float();
 
-    // definition vector for branch
-    std::vector<short> values; 
-    
-    
-    // initializing TTree and TBranch
-    // TFile rootFile( root_file.c_str() , "RECREATE", "" , ROOT::CompressionSettings(ROOT::kZSTD, 1));
-    TFile rootFile( root_file.c_str() , "RECREATE");
-    TTree *tree = new TTree(tree_name.c_str() , tree_name.c_str());
-    TBranch *branch = tree->Branch(branch_name.c_str(), &values);
 
-    tree->SetAutoSave(AUTO_SAVE);
-    tree ->SetAutoFlush((int)AUTO_FLUSH);
+    // definition vector for timestamps
+    std::vector<double> values; 
 
-    // Write settings to ROOT tree
-    add_settings_to_csv(digitizer, settings);
     
     // Process events until end of file
     while( in.peek() != EOF ){
@@ -309,29 +320,22 @@ int main(int argc, char const *argv[])
         // clear string
         content.clear();
         
-
+        
         
         // Extract and store event data from XML
         for( pugi::xml_node event : events.children("event")){
             int id = event.attribute("id").as_int();
             progressBar(float(id)/float(max_ID) , id);
-            // std::cout<<trace<<"\n";
-            trace_to_root(event , values , tree);
-            trace_to_csv(event, values);
-            values.clear();
 
+            trace_to_timestamp( event , values , freq_hz , size);
         }
-
-        
     }
-
-    std::cout.flush();
-    // Write tree to file and close
-    tree->Write("", TObject::kOverwrite);
-    rootFile.Close();
     std::cout << std::endl;
     std::cout<<"-----------------------------------\t XML PARSED\t-----------------------------------\n";
     std::cout<<"events detected:\t" << values.size() << "\t events triggered:\t"<< max_ID << "\n";
+    timestamp_to_csv(out , values);
+
+    
     return 0;
 }
 

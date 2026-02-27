@@ -1,21 +1,18 @@
-import uproot
-import os.path
+
 import numpy as np
-import time
 
+import matplotlib.pyplot as plt
 
-if __name__ == "__main__":
-    
-    n = 0
-    fname = f"file_{n}.root"
+# Read the CSV file
+data = np.genfromtxt('16_1_2026_16_55.csv', delimiter=',')
 
+data = data.T[0]
 
-
-    
-    with uproot.open(fname) as file: # type: ignore
-        tree = file["events"]
-        tree_keys = tree.keys()
-        print(tree_keys[0])
-        
-
-    
+# Plot the data
+plt.figure(figsize=(10, 6))
+plt.hist(max(data) - data)
+plt.xlabel('Column Index')
+plt.ylabel('Value')
+plt.title('CSV Data Plot')
+plt.grid(True)
+plt.show()
