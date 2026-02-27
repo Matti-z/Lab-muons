@@ -3,6 +3,11 @@ import os
 from pathlib import Path
 from root_to_timestamp import process_root_files, root_settings_to_csv
 
+try:
+    from drive_sync import sync_local_folder_to_drive
+except ImportError:
+    sync_local_folder_to_drive = None
+
 
 
 
@@ -47,8 +52,9 @@ subprocess.run(['git', 'commit', '-m', 'Update timestamp data ' + xml_filename],
 subprocess.run(['git', 'push'], capture_output=False)
 
 
-if drive:
-    from drive_sync import sync_local_folder_to_drive
+
+if sync_local_folder_to_drive is not None:
     sync_local_folder_to_drive()
+
 
 
