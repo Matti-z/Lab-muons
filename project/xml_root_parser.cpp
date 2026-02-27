@@ -9,8 +9,8 @@
 #include <iomanip>
 
 
-// g++ -o xml_parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
-// g++ -o xml_parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml
+// g++ -o root_parser xml_root_parser.cpp $(root-config --cflags --libs) -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
+// g++ -o root_parser xml_root_parser.cpp $(root-config --cflags --libs) -lpugixml
 #define LINE_LIMIT 100000
 #define DELTA 500
 #define AUTO_FLUSH 500000
