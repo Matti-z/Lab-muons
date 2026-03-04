@@ -228,7 +228,7 @@ int main(int argc, char const *argv[])
 {
 
     if (argc <= 1) usage();
-    std::string xml_path = (argv[1] == "debug") ? argv[1] : "../big_data/16_1_2026_16_55.xml";
+    std::string xml_path = (argv[1] == "debug") ? "../big_data/16_1_2026_16_55.xml" : argv[1];
     std::cout<<xml_path<<"\n";
     std::string csv_directory = (argc > 2) ? argv[2] : ".";
     std::string cfg_directory = (argc > 3) ? argv[3] : ".";

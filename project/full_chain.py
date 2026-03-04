@@ -20,13 +20,13 @@ universal_dir = lambda path: default_dir + path
 
 
 invertito = True
-drive = False
-xml_path = universal_dir("big_data/error_prop_100ns.xml")
+drive = True
+xml_path = universal_dir("big_data/inverted_26_02_2026_16_57.xml")
 xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
 csv_folder = universal_dir("Data/timestamp/")
 csv_settings_folder = universal_dir("Data/settings/")
 
-
+print(xml_path)
 
 root_path = universal_dir("big_data/root/"+xml_filename+"/")
 
@@ -36,7 +36,7 @@ os.makedirs(os.path.dirname(xml_path), exist_ok=True)
 os.makedirs(os.path.dirname(root_path), exist_ok=True)
 os.makedirs(os.path.dirname(csv_settings_folder), exist_ok=True)
 
-if invertito:
+if not invertito:
     result = subprocess.run([universal_dir("project/root_parser"), xml_path, root_path], capture_output=False)
     if result.returncode != 0:
         print(result.stderr)
