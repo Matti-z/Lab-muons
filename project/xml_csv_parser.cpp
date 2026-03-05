@@ -153,7 +153,7 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& values , do
 
 void timestamp_to_csv( std::ofstream& out, std::vector<double>& values){
     for( int i = 0 ; i < values.size(); i++){
-        out << values[i] << ",\n";
+        out << values[i] << "\n";
     }
 }
 
