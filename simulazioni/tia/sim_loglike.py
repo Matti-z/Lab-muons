@@ -5,8 +5,10 @@ import random
 import matplotlib.pyplot as plt
 from lib import *
 
-def exp_unif(x, N , a, b, tau, e):
-    return a * N * (expon.pdf(x, 0, tau) + b * N * uniform.pdf(x, 0, e))
+def exp_unif(x, N , A, a, b, tau, e):
+    return a * N * (expon.pdf(x, A, tau) + b * N * uniform.pdf(x, 0, e))
+def exp_unif_cdf(x, N , A, a, b, tau, e):
+    return a * N * (expon.cdf(x, A, tau) + b * N * uniform.cdf(x, 0, e))
 
 def exp(x, a, tau):
     return a * expon.pdf(x, 0, tau) 
@@ -14,16 +16,17 @@ def exp(x, a, tau):
 def singolo_punto(funct, parameters : np.ndarray): #voglio creare il singolo punto della distribuzione
 
     if funct is exp_unif:
-        N0 = parameters[0]
-        a0 = parameters[1]
-        b0 = parameters[2]
-        tau0 = parameters[3]
-        e0 = parameters[4]
+        n0 = parameters[0]
+        A0 = parameters[1]
+        a0 = parameters[2]
+        b0 = parameters[3]
+        tau0 = parameters[4]
+        e0 = parameters[5]
         
         while True:
             x0 = np.random.uniform(0, 7e-6)
-            y0 = np.random.uniform(0, a0 * N0 / tau0 + b0 * N0 / e0 )
-            if y0 < exp_unif(x0, N0, a0, b0, tau0, e0):
+            y0 = np.random.uniform(0, a0 * n0 / tau0 + b0 * n0 / e0 )
+            if y0 < exp_unif(x0, n0, A0, a0, b0, tau0, e0):
                 return x0, y0
     if funct is exp:
         a0 = parameters[0]
@@ -48,16 +51,26 @@ def singola_distribuzione(funct, parameters : np.ndarray, n_points = 100000): #v
         y[i] = y1
     return x, y
 
-def fitting_singola_distribuzione(funct, parameters : np.ndarray, n_points = 100000, bin = 67):#n_points è numero di punti in singola distribuzione
+def fitting_singola_distribuzione(funct, funct_cdf, parameters : np.ndarray, n_points = 100000, bin = 67):#n_points è numero di punti in singola distribuzione
     x, y = singola_distribuzione(funct, parameters, n_points)
+    # x_prime = np.linspace(0, 7e-6, 10000)
+    # plt.hist(x, bins = 100, density = True, label = "exp_unif")
+    # plt.plot(x_prime, exp_unif(x_prime, *parameters)/ (parameters[0]))
+    # plt.show()
     if funct is exp_unif:
-        m = dataset_analysis(x, funct, args = { "a": parameters[1], "b": parameters[2],
-                                                "tau": parameters[3], "e": parameters[4]}, bins = bin)
+        count, edges = np.histogram( x , bins=bin) 
+        cost = ExtendedBinnedNLL(count, edges, funct_cdf)
+        m = Minuit(cost, *parameters)
+        m.fixed['A'] = True
+        m.migrad()
+        # m = dataset_analysis(x, funct, args = { "a": parameters[1], "b": parameters[2],
+                                                # "tau": parameters[3], "e": parameters[4]}, bins = bin)
     if funct is exp:
         m = dataset_analysis(x, funct, args = {"a": parameters[0], "tau": parameters[1]}, bins = bin)
+    print(m)
     return m.values, m.errors
 
-def save_number_data(funct, parameters : np.ndarray, n_points = 100000, q = 50): #q è numero di fit che voglio fare
+def save_number_data(funct, funct1, parameters : np.ndarray, n_points = 100000, q = 50): #q è numero di fit che voglio fare
     am = np.zeros(q)
     bm = np.zeros(q)
     taum = np.zeros(q)
@@ -67,7 +80,7 @@ def save_number_data(funct, parameters : np.ndarray, n_points = 100000, q = 50):
     err_taum = np.zeros(q)
     err_em = np.zeros(q)
     for i in range (q):
-        v, err = fitting_singola_distribuzione(funct = funct, parameters = parameters, n_points = n_points)
+        v, err = fitting_singola_distribuzione(funct = funct, funct_cdf = funct1, parameters = parameters, n_points = n_points)
         am[i] = v[0]
         bm[i] = v[1]
         taum[i] = v[2]
@@ -76,26 +89,29 @@ def save_number_data(funct, parameters : np.ndarray, n_points = 100000, q = 50):
         err_bm[i] = err[1]
         err_taum[i] = err[2]
         err_em[i] = err[3]
-        print("fit done", i, "/", q, ", tau value:", v[2])
-    plt.hist(taum, 8,)
+        print("fit done", i, "/", q, ", tau value:", v[3])
+    plt.hist(taum, 8)
     plt.show()
     return taum
     
 
 
-
 if __name__ == "__main__":
     N = 46506
     a = 1.031
+    A = 0
     b = 1.39e-6
     tau = 2.09e-6
     e = 6.484e-6
 
-    parameters = [N, a, b, tau, e]
+    parameters = [N, A, a, b, tau, e]
     parameters_exp = [a, tau]
-    # x, y = singola_distribuzione(exp_unif, parameters, n_points = 50000)
+    # x, y = singola_distribuzione(exp_unif, parameters, n_points = 5)
+    # plt.hist(x, bins = 100, density = True, label = "exp_unif")
+    # plt.show()
     # v, er = fitting_singola_distribuzione(exp_unif, parameters, n_points = 5000)
-    a_data = save_number_data(exp_unif, parameters, n_points = 10000, q = 100)
+    a_data = save_number_data(exp_unif, exp_unif_cdf, parameters, n_points = N, q = 100)
+
     # print(a_data)
     
     
