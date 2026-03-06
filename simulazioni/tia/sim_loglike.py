@@ -89,7 +89,7 @@ def save_number_data(funct, funct1, parameters : np.ndarray, n_points = 100000, 
         err_bm[i] = err[1]
         err_taum[i] = err[2]
         err_em[i] = err[3]
-        print("fit done", i, "/", q, ", tau value:", v[3])
+        print("fit done", i, "/", q, ", tau value:", v[4])
     plt.hist(taum, 8)
     plt.show()
     return taum
