@@ -121,21 +121,28 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& values , st
     std::string trace;
     int channel;
     int max;
+    int max_channel = -1;
     std::vector<std::vector<short>> trace_vector;
     
     int last_trace_index = size-1;
 
     // Parse trace values into vector
     bool save = false;
+
     for (pugi::xml_node trace : event.children("trace")){
-        channel = event.child("trace").attribute("samples").as_int();
+        channel = trace.attribute("channel").as_int();
+        if ( channel > max_channel){
+            max_channel = channel;
+            trace_vector.push_back(std::vector<short>());
+        }
+        if( !channel) save = false;
+
         std::istringstream iss(trace.text().as_string());
-
+        
         max = check_multitrace(iss, save, trace_vector, channel);
-
-
-
+        
         if (trace_vector[channel].size() != size) { std::cout << "trace of unexpected size detected\n"; exit(0); }
+        
     
     }
     if (save) timestamp_calculator(last_trace_index, freq, trace_vector, max, values , discriminator);
@@ -161,8 +168,7 @@ int main(int argc, char const *argv[])
 {
     //* INPUT FROM COMMAND LINE-------------------------------------------------------------------------------
     if (argc <= 1) usage();
-    std::string xml_path = (argv[1] == "debug") ? "../big_data/16_1_2026_16_55.xml" : argv[1];
-    std::cout<<xml_path<<"\n";
+    std::string xml_path = (argv[1] == "debug") ? "../big_data/triple_04_03_2026_05_12.xml" : argv[1];
     std::string csv_directory = (argc > 2) ? argv[2] : ".";
     std::string cfg_directory = (argc > 3) ? argv[3] : ".";
     //* -------------------------------------------------------------------------------
@@ -170,9 +176,12 @@ int main(int argc, char const *argv[])
     //* VARIABLE DEFINITION -------------------------------------------------------------------------------
     if ( csv_directory.back() != '/' ) csv_directory.append("/");
     if ( cfg_directory.back() != '/' ) cfg_directory.append("/");
-    std::string filename = xml_path.substr(xml_path.find_last_of("/\\") + 1).substr(0, filename.find_last_of("."));
+    std::string filename = xml_path.substr(xml_path.find_last_of("/\\") + 1);
+    filename = filename.substr(0, filename.find_last_of("."));
     std::string csv_file = csv_directory + filename + ".csv";
     std::string cfg_file = cfg_directory + filename + "_cfg.csv";
+
+    std::cout << filename << xml_path;
     //* ------------------------------------------------------------------------------- 
 
     
@@ -202,12 +211,13 @@ int main(int argc, char const *argv[])
 
     int size;
     double freq_hz;
-    int max_ID = readLastEventId(xml_path , size);
+
 
     std::vector<double> timestamp;
     std::vector<std::vector<double>> multichannel_timestamp; 
     std::vector<bool> dataset_divider;
-
+    
+    pugi::xml_document history;
     pugi::xml_node events;
     //* -------------------------------------------------------------------------------
 
@@ -227,7 +237,7 @@ int main(int argc, char const *argv[])
 
 
     
-
+    int max_ID = readLastEventId(xml_path , size);
     std::cout<<"Number of Events: \t"<< max_ID<<"\n";
 
 
@@ -237,13 +247,16 @@ int main(int argc, char const *argv[])
     // Process events until end of file
     while( in.peek() != EOF ){
 
-        event_parser(in , events);
+        event_parser(in , events , history);
+        
         
         // Extract and store event data from XML
         for( pugi::xml_node event : events.children("event")){
+            
             int id = event.attribute("id").as_int();
             progressBar(float(id)/float(max_ID) , id);
 
+            
             trace_to_timestamp( event , timestamp , dataset_divider,  freq_hz , size);
         }
     }

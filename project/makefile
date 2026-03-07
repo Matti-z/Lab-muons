@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall
+CXXFLAGS = -Wall -g
 LDFLAGS = -lpugixml
 OUTPUT_DIR = bin
 LIB_DIR = libraries
