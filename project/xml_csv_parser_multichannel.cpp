@@ -56,11 +56,12 @@ void check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vec
     }
 }
 
-bool triple_check(int last_trace_index, int traceStartingIndex ,double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &values)
+void triple_check(int last_trace_index, int traceStartingIndex ,double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &values)
 {
     bool isTriggered = false;
     bool giunone_signal = false;
     bool tripla_in_discrimination = false; 
+    bool hasPartenopeTriggered = false;
     
     std::vector<short> tripla = trace_vector[0];
     std::vector<short> partenope = trace_vector[1];
@@ -86,7 +87,6 @@ bool triple_check(int last_trace_index, int traceStartingIndex ,double freq, std
         double timestamp = double(last_trace_index - traceIndex) / freq;
         if (tripla[traceIndex] < baselineTripla - DELTA && !isTriggered)
         {
-
             values.push_back(timestamp);
             isTriggered = true;
             if (tripla_in_discrimination){
@@ -94,33 +94,34 @@ bool triple_check(int last_trace_index, int traceStartingIndex ,double freq, std
                 values.pop_back();
                 continue;
             }
-            
         }
+
         if (tripla[traceIndex] > baselineTripla - DELTA && isTriggered){
             isTriggered = false;
             if( !giunone_signal) {
                 values.pop_back();
-                return true;
+                giunone_signal = false;
+                continue;
             }
             giunone_signal = false;
-
         }
         
-        if ( partenope[traceIndex] < baselinePartenope - DELTA && isTriggered ){
+        if ( partenope[traceIndex] < baselinePartenope - DELTA && isTriggered && !hasPartenopeTriggered){
             values.pop_back();
-            return true;
+            hasPartenopeTriggered = true;
+            continue;
         }
+
+        if ( partenope[traceIndex] > baselinePartenope - DELTA && hasPartenopeTriggered) hasPartenopeTriggered = false;
         
         if ( giunone[traceIndex]< baselineGiunone - DELTA && isTriggered ) giunone_signal = true;
     }
-    return false;
 }
 
 void timestamp_calculator(int last_trace_index, double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &values , std::vector<bool> &dataset_discriminator)
 {
     std::vector<short> partenope = trace_vector[1];
     std::vector<short> giunone = trace_vector[2];
-    bool fake_triple = false;
     int baselineGiunone = giunone[0];
     int baselinePartenope = partenope[0];
 
@@ -128,10 +129,8 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
     for( int g_index = last_trace_index ; g_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; g_index--){
         if(giunone[g_index] < baselineGiunone - DELTA){
             std::cout << "giunone\n";
-            dataset_discriminator.push_back(true);
-            fake_triple = triple_check(last_trace_index, g_index , freq, trace_vector, values);
-            std::cout << fake_triple << "\t FAKE TRIPLE\n";
-            if( fake_triple) dataset_discriminator.pop_back();
+            triple_check(last_trace_index, g_index , freq, trace_vector, values);
+            while( dataset_discriminator.size() < values.size()) dataset_discriminator.push_back(true);
             break;
         }
     }
@@ -139,10 +138,8 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
     for( int p_index = last_trace_index ; p_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; p_index--){
         if(partenope[p_index] < baselinePartenope - DELTA){
             std::cout << "partenope\n";
-            dataset_discriminator.push_back(false);
-            fake_triple = triple_check(last_trace_index, p_index , freq, trace_vector, values);
-            std::cout << fake_triple << "\t FAKE TRIPLE\n";
-            if( fake_triple) dataset_discriminator.pop_back();
+            triple_check(last_trace_index, p_index , freq, trace_vector, values);
+            while( dataset_discriminator.size() < values.size()) dataset_discriminator.push_back(false);
             break;
         }
     }
@@ -183,7 +180,7 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& values , st
     
     if ( values.size() != discriminator.size()){
         std::cout<< values.size() << "\t" << discriminator.size()<< "\n";
-        std::cout << "different size between discriminator array and values array\n";
+        std::cout << "different size between timestamp array and isGiunoneDataset array\n";
         exit(-1);
     }
 
