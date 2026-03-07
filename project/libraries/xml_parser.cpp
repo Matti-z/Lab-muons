@@ -27,7 +27,7 @@ void setting_parser( std::string starter, std::ifstream& in , pugi::xml_document
     content.clear();
 }
 
-void event_parser( std::ifstream& in , pugi::xml_node &events){
+void event_parser( std::ifstream& in , pugi::xml_node &events , pugi::xml_document &history){
     
     int counter = 0;
     std::string content;
@@ -50,7 +50,7 @@ void event_parser( std::ifstream& in , pugi::xml_node &events){
 
     content += "</events>\n";
 
-    pugi::xml_document history;
+
     history.load_string(content.c_str());
     events = history.child("events");
 }

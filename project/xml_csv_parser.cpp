@@ -142,6 +142,7 @@ int main(int argc, char const *argv[])
     std::vector<std::vector<double>> multichannel_timestamp; 
     std::vector<bool> dataset_divider;
 
+    pugi::xml_document history;
     pugi::xml_node events;
     //* -------------------------------------------------------------------------------
 
@@ -165,7 +166,7 @@ int main(int argc, char const *argv[])
     // Process events until end of file
     while( in.peek() != EOF ){
 
-        event_parser(in , events);
+        event_parser(in , events, history);
         
         // Extract and store event data from XML
         for( pugi::xml_node event : events.children("event")){
