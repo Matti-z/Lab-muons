@@ -10,8 +10,7 @@
 #include "libraries/xml_parser.hpp"
 #include "libraries/progress_bar.hpp"
 
-// g++ -o csv_parser xml_csv_parser.cpp -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
-// g++ -o csv_parser xml_csv_parser.cpp -lpugixml
+// make
 // #define LINE_LIMIT 100000
 #define DELTA 500
 #define DOUBLE_CHECK_LIMIT_INDEX 50

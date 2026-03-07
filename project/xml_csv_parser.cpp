@@ -11,8 +11,8 @@
 #include "libraries/progress_bar.hpp"
 
 
-// g++ -o csv_parser xml_csv_parser.cpp -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
-// g++ -o csv_parser xml_csv_parser.cpp -lpugixml
+// g++ -o inverse_parser xml_csv_parser.cpp -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
+// g++ -o inverse_parser xml_csv_parser.cpp -lpugixml
 #define LINE_LIMIT 100000
 #define DELTA 500
 

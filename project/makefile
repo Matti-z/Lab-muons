@@ -5,13 +5,13 @@ OUTPUT_DIR = bin
 LIB_DIR = libraries
 
 SOURCES = xml_csv_parser_multichannel.cpp 
+TARGET = $(OUTPUT_DIR)/multichannel_parser
 
 LIBRARIES = $(LIB_DIR)/progress_bar.cpp $(LIB_DIR)/xml_parser.cpp
-TARGET = $(OUTPUT_DIR)/$(SOURCES: .cpp=)
 OBJECTS = $(SOURCES: .cpp=.o) $(LIBRARIES: .cpp=.o)
 
 # result file needs all object files
-$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS) $(OUTPUT_DIR)
 # 	compiler command with .o files
 	$(CXX) $(OBJECTS) $(LDFLAGS) -o $(TARGET)
 
