@@ -13,7 +13,8 @@
 // make
 // #define LINE_LIMIT 100000
 #define DELTA 500
-#define DOUBLE_CHECK_LIMIT_INDEX 50
+#define DOUBLE_CHECK_LIMIT_INDEX 40
+#define PULSE_WIDTH 12  
 
 
 
@@ -29,7 +30,7 @@ void usage(){
 
 
 
-int check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vector<short>> &trace_vector, int channel)
+void check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vector<short>> &trace_vector, int channel)
 {
     int x;
     int min = 0;
@@ -53,60 +54,90 @@ int check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vect
         }
         trace_vector[channel].push_back(x);
     }
-    return max;
 }
 
-bool triple_check(int last_trace_index, double freq, std::vector<std::vector<short>> &trace_vector, int max, std::vector<double> &values)
+bool triple_check(int last_trace_index, int double_index ,double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &values)
 {
     bool trigger = false;
     bool giunone_signal = false;
-    bool fake_triple = false;
+    bool tripla_in_discrimination = false; 
+    
     std::vector<short> tripla = trace_vector[0];
     std::vector<short> partenope = trace_vector[1];
     std::vector<short> giunone = trace_vector[2];
-    for (int traceIndex = last_trace_index; traceIndex >= 0; traceIndex--)
+
+    int base_T = tripla[0];
+    int base_G = giunone[0];
+    int base_P = partenope[0]; 
+
+    for (int traceIndex = double_index; traceIndex > double_index - PULSE_WIDTH ; traceIndex--){
+        if (tripla[traceIndex] < base_T - DELTA){
+            tripla_in_discrimination = true;
+            double_index = traceIndex;
+            break;
+        }
+        
+    }
+
+    std::cout << tripla_in_discrimination << "\tDOPPIA TRIPLA\n";
+
+    for (int traceIndex = double_index; traceIndex >= 0; traceIndex--)
     {
         double timestamp = double(last_trace_index - traceIndex) / freq;
-        if (tripla[traceIndex] < max - DELTA && !trigger)
+        if (tripla[traceIndex] < base_T - DELTA && !trigger)
         {
+
             values.push_back(timestamp);
+            if (tripla_in_discrimination){
+                tripla_in_discrimination = false;
+                values.pop_back();
+            }
             trigger = true;
         }
-        if (tripla[traceIndex] > max - DELTA && trigger){
+        if (tripla[traceIndex] > base_T - DELTA && trigger){
             trigger = false;
-            if( !giunone_signal) return true;
+            if( !giunone_signal) {
+                values.pop_back();
+                return true;
+            }
             giunone_signal = false;
 
         }
         
-        if ( partenope[traceIndex] < max - DELTA && trigger ){
+        if ( partenope[traceIndex] < base_P - DELTA && trigger ){
             values.pop_back();
             return true;
         }
         
-        if ( giunone[traceIndex]< max - DELTA && trigger) giunone_signal = true;
-        
+        if ( giunone[traceIndex]< base_G - DELTA && trigger ) giunone_signal = true;
     }
-    return fake_triple;
+    return false;
 }
 
-void timestamp_calculator(int last_trace_index, double freq, std::vector<std::vector<short>> &trace_vector, int max, std::vector<double> &values , std::vector<bool> dataset_discriminator)
+void timestamp_calculator(int last_trace_index, double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &values , std::vector<bool> &dataset_discriminator)
 {
     std::vector<short> partenope = trace_vector[1];
     std::vector<short> giunone = trace_vector[2];
     bool fake_triple = false;
+    int base_G = giunone[0];
+    int base_P = partenope[0];
 
-    for( int g_index = last_trace_index ; g_index < last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; g_index--){
-        if(giunone[g_index] < max - DELTA){
-            fake_triple = triple_check(last_trace_index, freq, trace_vector, max, values);
+
+    for( int g_index = last_trace_index ; g_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; g_index--){
+        if(giunone[g_index] < base_G - DELTA){
+            std::cout << "giunone\n";
+            fake_triple = triple_check(last_trace_index, g_index , freq, trace_vector, values);
+            std::cout << fake_triple << "\t FAKE TRIPLE\n";
             if( !fake_triple) dataset_discriminator.push_back(true);
             break;
         }
     }
 
-    for( int p_index = last_trace_index ; p_index < last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; p_index--){
-        if(partenope[p_index] < max - DELTA){
-            fake_triple = triple_check(last_trace_index, freq, trace_vector, max, values);
+    for( int p_index = last_trace_index ; p_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; p_index--){
+        if(partenope[p_index] < base_P - DELTA){
+            std::cout << "partenope\n";
+            fake_triple = triple_check(last_trace_index, p_index , freq, trace_vector, values);
+            std::cout << fake_triple << "\t FAKE TRIPLE\n";
             if( !fake_triple) dataset_discriminator.push_back(false);
             break;
         }
@@ -120,16 +151,15 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& values , st
 {
     std::string trace;
     int channel;
-    int max;
     int max_channel = -1;
     std::vector<std::vector<short>> trace_vector;
     
     int last_trace_index = size-1;
 
-    // Parse trace values into vector
     bool save = false;
 
     for (pugi::xml_node trace : event.children("trace")){
+
         channel = trace.attribute("channel").as_int();
         if ( channel > max_channel){
             max_channel = channel;
@@ -139,17 +169,19 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& values , st
 
         std::istringstream iss(trace.text().as_string());
         
-        max = check_multitrace(iss, save, trace_vector, channel);
-        
-        if (trace_vector[channel].size() != size) { std::cout << "trace of unexpected size detected\n"; exit(0); }
+        check_multitrace(iss, save, trace_vector, channel);
+
+        if (trace_vector[channel].size() != size) { std::cout << "trace of unexpected size detected\n"; exit(-1); }
         
     
     }
-    if (save) timestamp_calculator(last_trace_index, freq, trace_vector, max, values , discriminator);
+    if (save) timestamp_calculator(last_trace_index, freq, trace_vector, values , discriminator);
+    std::cout<< values.size() << "\t" << discriminator.size()<< "\n";
     
     if ( values.size() != discriminator.size()){
-        std::cout << "different size between discriminator array and values array";
-        exit(0);
+        std::cout<< values.size() << "\t" << discriminator.size()<< "\n";
+        std::cout << "different size between discriminator array and values array\n";
+        exit(-1);
     }
 
     trace_vector.clear();
@@ -192,15 +224,15 @@ int main(int argc, char const *argv[])
     std::ofstream cfg( cfg_file.c_str());
     if (!in.is_open()){
         std::cout << "XML not Found\n";
-        exit(0);
+        exit(-1);
     }
     if (!out.is_open()){
         std::cout << "CSV not Found\n";
-        exit(0);
+        exit(-1);
     }
     if (!cfg.is_open()){
         std::cout << "CSV_settings not Found\n";
-        exit(0);
+        exit(-1);
     }
     //* -------------------------------------------------------------------------------
 
@@ -233,6 +265,7 @@ int main(int argc, char const *argv[])
     freq_hz = freq.attribute("hz").as_float();
 
     settings_to_csv( digitizer , settings , cfg);
+    cfg.close();
     //* -------------------------------------------------------------------------------
 
 
@@ -254,9 +287,9 @@ int main(int argc, char const *argv[])
         for( pugi::xml_node event : events.children("event")){
             
             int id = event.attribute("id").as_int();
-            progressBar(float(id)/float(max_ID) , id);
+            // progressBar(float(id)/float(max_ID) , id);
 
-            
+            std::cout << id << "\t ID \n";
             trace_to_timestamp( event , timestamp , dataset_divider,  freq_hz , size);
         }
     }
