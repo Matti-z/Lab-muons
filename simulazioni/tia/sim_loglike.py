@@ -4,6 +4,7 @@ from scipy.stats import expon, uniform
 import random
 import matplotlib.pyplot as plt
 from lib import *
+import time 
 
 def exp_unif(x, N , A, a, b, tau, e):
     return a * N * (expon.pdf(x, A, tau) + b * N * uniform.pdf(x, 0, e))
@@ -26,6 +27,7 @@ def singolo_punto(funct, parameters : np.ndarray): #voglio creare il singolo pun
         e0 = parameters[5]
         
         while True:
+            random.seed(time.time())
             x0 = np.random.uniform(0, 7e-6)
             #ottimizzazione y triangolare tra max in 0 e max in 7e-6, non funziona
             # y0 = np.random.uniform(0, (funct(7e-6, *parameters)-funct(0, *parameters)/(7e-6) * x0)+ (funct(0, *parameters))) 
