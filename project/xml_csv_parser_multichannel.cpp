@@ -7,8 +7,8 @@
 #include <cctype>
 #include <chrono>
 #include <iomanip>
-#include "xml_parser.hpp"
-#include "progress_bar.hpp"
+#include "libraries/xml_parser.hpp"
+#include "libraries/progress_bar.hpp"
 
 // g++ -o csv_parser xml_csv_parser.cpp -I/opt/homebrew/include -L/opt/homebrew/lib -lpugixml
 // g++ -o csv_parser xml_csv_parser.cpp -lpugixml

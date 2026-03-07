@@ -49,7 +49,7 @@ void setting_parser( std::string starter, std::ifstream& in , std::string& conte
     content += line + "\n";
 }
 
-void add_settings_to_csv(pugi::xml_document &digitizer, pugi::xml_document &settings)
+void add_settings_to_root(pugi::xml_document &digitizer, pugi::xml_document &settings)
 {
     double freq_hz;
     int resolution;
@@ -291,7 +291,7 @@ int main(int argc, char const *argv[])
     tree ->SetAutoFlush((int)AUTO_FLUSH);
 
     // Write settings to ROOT tree
-    add_settings_to_csv(digitizer, settings);
+    add_settings_to_root(digitizer, settings);
     
     // Process events until end of file
     while( in.peek() != EOF ){
