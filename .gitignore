@@ -58,6 +58,7 @@ coverage.xml
 *.exe
 *.out
 *.elf
+core
 
 # linker, map, dependency files
 *.map
