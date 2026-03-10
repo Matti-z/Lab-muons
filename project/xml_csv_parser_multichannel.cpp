@@ -205,7 +205,7 @@ int main(int argc, char const *argv[])
 {
     //* INPUT FROM COMMAND LINE-------------------------------------------------------------------------------
     if (argc <= 1) usage();
-    std::string xml_path = (argv[1] == "debug") ? "../big_data/triple_04_03_2026_05_12.xml" : argv[1];
+    std::string xml_path = (std::string(argv[1]) == "debug") ? "../big_data/triple_04_03_2026_05_12.xml" : argv[1];
     std::string csv_directory = (argc > 2) ? argv[2] : ".";
     std::string cfg_directory = (argc > 3) ? argv[3] : ".";
     //* -------------------------------------------------------------------------------
