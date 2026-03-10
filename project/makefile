@@ -1,3 +1,4 @@
+
 CXX = g++
 CXXFLAGS = -Wall -g
 LDFLAGS = -lpugixml
@@ -6,6 +7,8 @@ LIB_DIR = libraries
 
 SOURCES = xml_csv_parser_multichannel.cpp 
 TARGET = $(OUTPUT_DIR)/multichannel_parser
+
+
 
 LIBRARIES = $(LIB_DIR)/progress_bar.cpp $(LIB_DIR)/xml_parser.cpp
 OBJECTS = $(SOURCES: .cpp=.o) $(LIBRARIES: .cpp=.o)
