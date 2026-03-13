@@ -81,7 +81,6 @@ void triple_check(int last_trace_index, int traceStartingIndex ,double freq, std
         }
     }
     
-    std::cout << tripla_in_discrimination << "\tDOPPIA TRIPLA\n";
 
     for (int traceIndex = traceStartingIndex; traceIndex >= 0; traceIndex--)
     {
@@ -92,7 +91,7 @@ void triple_check(int last_trace_index, int traceStartingIndex ,double freq, std
             isTriggered = true;
             if (tripla_in_discrimination){
                 
-                if( timestamps.size() <= startingLenght) std::cout << "-------tripla in discrimination-------\n";
+                if( timestamps.size() <= startingLenght)
                 timestamps.pop_back();
                 continue;
             }
@@ -102,7 +101,7 @@ void triple_check(int last_trace_index, int traceStartingIndex ,double freq, std
             isTriggered = false;
             tripla_in_discrimination = false;
             if( !giunone_signal) {
-                if( timestamps.size() <= startingLenght) std::cout << "-------giunone-------\n";
+                if( timestamps.size() <= startingLenght)
                 timestamps.pop_back();
                 giunone_signal = false;
                 continue;
@@ -111,7 +110,7 @@ void triple_check(int last_trace_index, int traceStartingIndex ,double freq, std
         }
         
         if ( partenope[traceIndex] < baselinePartenope - DELTA && isTriggered && !hasPartenopeTriggered && !tripla_in_discrimination){
-            if( timestamps.size() <= startingLenght) std::cout << "-------partenope-------\n";
+            if( timestamps.size() <= startingLenght)
             timestamps.pop_back();
             hasPartenopeTriggered = true;
             continue;
@@ -133,7 +132,6 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
 
     for( int g_index = last_trace_index ; g_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; g_index--){
         if(giunone[g_index] < baselineGiunone - DELTA){
-            std::cout << "giunone\n";
             triple_check(last_trace_index, g_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(true);
             break;
@@ -142,7 +140,6 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
 
     for( int p_index = last_trace_index ; p_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; p_index--){
         if(partenope[p_index] < baselinePartenope - DELTA){
-            std::cout << "partenope\n";
             triple_check(last_trace_index, p_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(false);
             break;
@@ -292,9 +289,7 @@ int main(int argc, char const *argv[])
         for( pugi::xml_node event : events.children("event")){
             
             int id = event.attribute("id").as_int();
-            // progressBar(float(id)/float(max_ID) , id);
-
-            std::cout << id << "\t ID \n";
+            progressBar(float(id)/float(max_ID) , id);
             trace_to_timestamp( event , timestamp , dataset_divider,  freq_hz , size);
         }
     }

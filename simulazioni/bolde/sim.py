@@ -1,6 +1,5 @@
-from random import *
+from random import random
 import numpy as np
-
 #TODO al posto di montecarlo far andare un punto da +inf a -inf a step costanti e farlo andare diretto al centro del primo scintillatore
 
 #! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
@@ -44,7 +43,7 @@ class muone:
         self.z = z
 
 
-    def angle_generation( self , S_b:scintillatore = 0 , S_t: scintillatore = 0) :
+    def angle_generation( self , S_b:scintillatore|None = None , S_t: scintillatore|None = None) :
 
         self.theta = np.pi * random()
         self.phi = np.pi * random()
