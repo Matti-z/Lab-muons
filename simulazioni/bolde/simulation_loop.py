@@ -22,12 +22,10 @@ if __name__ == "__main__":
     shift_array = [0, 15, 30, 45, 60, 75]
 
     for pos_x_row, pos_y_row, height_row in zip(pos_x_array, pos_y_array, height_array):
-        # Original entry
         base_entry = [ [x, y, h] for x, y, h in zip(pos_x_row, pos_y_row, height_row) ]
-        # Create copies with x coordinate of the second entry set to each value in shift_array
         for shift in shift_array:
-            modified_entry = [list(coord) for coord in base_entry]  # Deep copy
-            modified_entry[1][0] = shift  # Set x of second entry
+            modified_entry = [list(coord) for coord in base_entry] 
+            modified_entry[1][0] = shift 
             xyz_array.append(modified_entry)
     print( len(xyz_array))
     data_dict ={
