@@ -57,8 +57,25 @@ def singola_distribuzione(funct, parameters : np.ndarray, n_points = 100000): #v
         y[i] = y1
     return x, y
 
-def fitting_singola_distribuzione(funct, funct_cdf, parameters : np.ndarray, n_points = 100000, bin = 67):#n_points è numero di punti in singola distribuzione
-    x, y = singola_distribuzione(funct, parameters, n_points)
+def singola_distribuzione_implemented( parameters, n_points = 100000):
+    n0 = parameters[0]
+    A0 = parameters[1]
+    a0 = parameters[2]
+    b0 = parameters[3]
+    tau0 = parameters[4]
+    e0 = parameters[5]
+    array_funct1 = np.random.exponential(tau0, int(n_points * a0))
+    # array_funct2 = np.random.uniform(0, 7e-7, int(n_points * b0))
+    # print(array_funct1, '\n', array_funct2)
+    # array = np.concatenate(array_funct1, array_funct2)
+    return array_funct1
+
+def fitting_singola_distribuzione(funct, funct_cdf, parameters : np.ndarray, n_points = 10000, bin = 67, mod = False):
+    #n_points è numero di punti in singola distribuzione
+    if (mod == False) :
+        x, y = singola_distribuzione(funct, parameters, n_points)
+    if (mod == True) : 
+        x = singola_distribuzione_implemented(parameters, n_points)
 
     #cose correttive al momento inutili, ma le lascio: sinoli plot
     # x_prime = np.linspace(0, 7e-6, 10000)
@@ -84,7 +101,7 @@ def fitting_singola_distribuzione(funct, funct_cdf, parameters : np.ndarray, n_p
     # print(m)
     return m.values, m.errors
 
-def save_number_data(funct, funct1, parameters : np.ndarray, n_points = 100000, q = 50): #q è numero di fit che voglio fare-->numero di valori diversi di theta
+def save_number_data(funct, funct1, parameters : np.ndarray, n_points = 100000, q = 50, mod = False): #q è numero di fit che voglio fare-->numero di valori diversi di theta
     nm = np.zeros(q)
     Am = np.zeros(q)
     am = np.zeros(q)
@@ -98,7 +115,7 @@ def save_number_data(funct, funct1, parameters : np.ndarray, n_points = 100000, 
     err_taum = np.zeros(q)
     err_em = np.zeros(q)
     for i in range (q):
-        v, err = fitting_singola_distribuzione(funct = funct, funct_cdf = funct1, parameters = parameters, n_points = n_points)
+        v, err = fitting_singola_distribuzione(funct = funct, funct_cdf = funct1, parameters = parameters, n_points = n_points, mod = mod)
         nm[i] = v[0]
         Am[i] = v[1]
         am[i] = v[2]
@@ -136,11 +153,12 @@ if __name__ == "__main__":
     # plt.hist(x, bins = 100, density = True, label = "exp_unif")
     # plt.show()
     # v, er = fitting_singola_distribuzione(exp_unif, parameters, n_points = 5000)
-    a_data = save_number_data(exp_unif, exp_unif_cdf, parameters, n_points = N, q = 1000)
-    with open ("data_sim_exp_unif3.txt", "w") as f:
+    a_data = save_number_data(exp_unif, exp_unif_cdf, parameters, n_points = N, q = 100000, mod = True)
+    with open ("data_sim_exp_unif4.txt", "w") as f:
         f.write("N A a b tau e err_N err_A err_a err_b err_tau err_e\n")
         for i in range(len(a_data[0])):
             f.write(f"{a_data[0][i]} {a_data[1][i]} {a_data[2][i]} {a_data[3][i]} {a_data[4][i]} {a_data[5][i]} {a_data[6][i]} {a_data[7][i]} {a_data[8][i]} {a_data[9][i]} {a_data[10][i]}\n")
+        
 
     
     
