@@ -136,8 +136,8 @@ if __name__ == "__main__":
     # plt.hist(x, bins = 100, density = True, label = "exp_unif")
     # plt.show()
     # v, er = fitting_singola_distribuzione(exp_unif, parameters, n_points = 5000)
-    a_data = save_number_data(exp_unif, exp_unif_cdf, parameters, n_points = N, q = 200)
-    with open ("data_sim_exp_unif2.txt", "w") as f:
+    a_data = save_number_data(exp_unif, exp_unif_cdf, parameters, n_points = N, q = 1000)
+    with open ("data_sim_exp_unif3.txt", "w") as f:
         f.write("N A a b tau e err_N err_A err_a err_b err_tau err_e\n")
         for i in range(len(a_data[0])):
             f.write(f"{a_data[0][i]} {a_data[1][i]} {a_data[2][i]} {a_data[3][i]} {a_data[4][i]} {a_data[5][i]} {a_data[6][i]} {a_data[7][i]} {a_data[8][i]} {a_data[9][i]} {a_data[10][i]}\n")
