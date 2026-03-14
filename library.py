@@ -65,8 +65,13 @@ def dataset_analysis(dataset: np.ndarray , creator: Callable, bins: SupportsInde
     return minuit_element
 
 
-def unbinned_data_analysis(dataset: np.ndarray , creator: Callable, args: dict) -> Minuit:
+def dataset_analysis_unbinned(dataset: np.ndarray , creator: Callable, args: dict) -> Minuit:
     model_function = function_generator_with_variable_N( creator , len(dataset))
+
+    sig_params = inspect.signature(model_function).parameters
+    if "min" in sig_params and "max" in sig_params:
+        model_function = function_generator_with_min_max( model_function , dataset)
+
     cost = ExtendedUnbinnedNLL(dataset , model_function)
 
     # Snippet to fix a different order between the function definition and args
@@ -92,8 +97,9 @@ def unbinned_data_analysis(dataset: np.ndarray , creator: Callable, args: dict) 
     return minuit_element
 
 
-def end(m:Minuit) -> None:
+def end(m:Minuit, asym: bool = True) -> None:
     m.migrad()
     m.hesse()
-    # m.minos()
+    if asym:
+        m.minos()
     display(m)
