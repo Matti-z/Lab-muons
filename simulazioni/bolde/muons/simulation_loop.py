@@ -1,4 +1,4 @@
-from simulazioni.bolde.muons.sim import sim
+from sim import sim
 import csv
 
 
