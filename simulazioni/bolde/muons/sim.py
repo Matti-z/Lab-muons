@@ -1,11 +1,14 @@
 from random import random
 import numpy as np
+from scipy.stats import norm
+from typing import Callable
+
 #TODO al posto di montecarlo far andare un punto da +inf a -inf a step costanti e farlo andare diretto al centro del primo scintillatore
 
 #! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
 
-N = 1e8
+N = 1e6
 L = 1e2
 z = 26
 
@@ -18,6 +21,17 @@ Hb_2 = 12.8
 Ha_3 = 25.3
 Hb_3 = 12.8
 
+muon_dist_approx = lambda size=1: norm.rvs(loc = np.pi/2 , scale = 1 , size  = size)/np.sqrt(np.pi * 2)
+
+
+def HoM( pdf: Callable , approx: Callable):
+    y = random()
+    x = approx()
+    if( y < pdf(x)): return x
+    return HoM(pdf , approx)
+
+def muon_dist( x ):
+    return np.sin(x)**2
 
 class scintillatore:
     def __init__(self , l , h , p , name = ""):
@@ -45,8 +59,8 @@ class muone:
 
     def angle_generation( self , S_b:scintillatore|None = None , S_t: scintillatore|None = None) :
 
-        self.theta = np.pi * random()
-        self.phi = np.pi * random()
+        self.theta = HoM( muon_dist , muon_dist_approx)
+        self.phi = HoM( muon_dist , muon_dist_approx)
 
         if type(S_b) is scintillatore and type(S_t) is scintillatore:
             if self.x< S_b.x1:

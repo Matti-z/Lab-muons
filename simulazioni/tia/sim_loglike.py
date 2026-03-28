@@ -64,7 +64,7 @@ def singola_distribuzione_implemented( parameters, n_points = 100000):
     b0 = parameters[3]
     tau0 = parameters[4]
     e0 = parameters[5]
-    array_funct1 = np.random.exponential(tau0, int(n_points * a0))
+    array_funct1 = np.random.exponential(tau0, int(n_points * a0)) + np.random.uniform(0, 7e-6, n_points * b0)
     # array_funct2 = np.random.uniform(0, 7e-7, int(n_points * b0))
     # print(array_funct1, '\n', array_funct2)
     # array = np.concatenate(array_funct1, array_funct2)
@@ -77,7 +77,7 @@ def fitting_singola_distribuzione(funct, funct_cdf, parameters : np.ndarray, n_p
     if (mod == True) : 
         x = singola_distribuzione_implemented(parameters, n_points)
 
-    #cose correttive al momento inutili, ma le lascio: sinoli plot
+    #cose correttive al momento inutili, ma le lascio: sono i plot
     # x_prime = np.linspace(0, 7e-6, 10000)
     # plt.hist(x, bins = 100, density = True, label = "exp_unif")
     # plt.plot(x_prime, exp_unif(x_prime, *parameters)/ (parameters[0]))
