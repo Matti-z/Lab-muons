@@ -101,7 +101,7 @@ tags
 # Misc
 *.bak
 *.tmp
-
+*.orig
 
 big_data
 csv
