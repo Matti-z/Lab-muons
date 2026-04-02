@@ -3,7 +3,6 @@ import numpy as np
 from scipy.stats import norm
 from typing import Callable
 
-#TODO al posto di montecarlo far andare un punto da +inf a -inf a step costanti e farlo andare diretto al centro del primo scintillatore
 
 #! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
@@ -21,7 +20,7 @@ Hb_2 = 12.8
 Ha_3 = 25.3
 Hb_3 = 12.8
 
-muon_dist_approx = lambda size=1: norm.rvs(loc = np.pi/2 , scale = 1 , size  = size)/np.sqrt(np.pi * 2)
+muon_dist_approx = lambda size=1: norm.rvs(loc = np.pi/2 , scale = 3 , size  = size)
 
 
 def HoM( pdf: Callable , approx: Callable):
@@ -62,15 +61,15 @@ class muone:
         self.theta = HoM( muon_dist , muon_dist_approx)
         self.phi = HoM( muon_dist , muon_dist_approx)
 
-        if type(S_b) is scintillatore and type(S_t) is scintillatore:
-            if self.x< S_b.x1:
-                self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
-            if self.x > S_b.x2:
-                self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))
-            if self.y < S_b.y1:
-                self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))
-            if self.y > S_b.y2:
-                self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))
+        # if type(S_b) is scintillatore and type(S_t) is scintillatore:
+        #     if self.x< S_b.x1:
+        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
+        #     if self.x > S_b.x2:
+        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))
+        #     if self.y < S_b.y1:
+        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))
+        #     if self.y > S_b.y2:
+        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))
         pass
 
 

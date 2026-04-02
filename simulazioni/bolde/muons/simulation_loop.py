@@ -27,7 +27,6 @@ if __name__ == "__main__":
             modified_entry = [list(coord) for coord in base_entry] 
             modified_entry[1][0] = shift 
             xyz_array.append(modified_entry)
-    print( len(xyz_array))
     data_dict ={
         'configuration': [],
         'coordinates': [],
@@ -37,7 +36,7 @@ if __name__ == "__main__":
     }
 
     csv_file = "simulation_results.csv"
-    fieldnames = ['configuration', 'coordinates[TtB][x,y,z]', 'doppie', 'triple', 'flag']
+    fieldnames = ['configuration', 'Tx', 'Ty' , 'Tz', 'Mx', 'My' , 'Mz' , 'Bx' , 'By' , 'Bz' , 'doppie', 'triple', 'flag']
 
     # Write header once at the start
     # Write header once at the start
@@ -49,11 +48,13 @@ if __name__ == "__main__":
         configuration = ["p", "m", "g"]
         if config[0][2] == 12.8:
             thin_pos = 2
-            configuration = ["m", "p/g", "g/p"]
+            configuration = ["m", "p", "g"]
         doppie, triple, flag = sim((config[2]), (config[1]), (config[0]), thin_pos, *configuration)
         row = [
             ' '.join(configuration),
-            str(config),
+            str(config[1][0]), str(config[1][1]), str(config[1][2]),
+            str(config[0][0]), str(config[0][1]), str(config[0][2]),
+            str(config[2][0]), str(config[2][1]), str(config[2][2]),
             str(doppie),
             str(triple),
             str(flag)
