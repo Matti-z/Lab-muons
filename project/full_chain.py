@@ -21,7 +21,7 @@ universal_dir = lambda path: default_dir + path
 
 file = "multichannel_parser"
 drive = True
-xml_path = universal_dir("big_data/triple_delay_16_03_2026_14_17.xml")
+xml_path = universal_dir("big_data/salt_27_03_2026_16_36.xml")
 xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
 csv_folder = universal_dir("Data/timestamp/")
 csv_settings_folder = universal_dir("Data/settings/")
