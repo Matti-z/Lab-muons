@@ -1,6 +1,10 @@
 from sim import sim
 import csv
 
+from pathlib import Path
+
+dir_path = Path(__file__).resolve().parent
+
 
 Ha_1 = 12.8
 Hb_1 = 8.4
@@ -35,7 +39,7 @@ if __name__ == "__main__":
         'flag': []
     }
 
-    csv_file = "simulation_results.csv"
+    csv_file = dir_path / "muon_distribution_simulation_results.csv"
     fieldnames = ['configuration', 'Tx', 'Ty' , 'Tz', 'Mx', 'My' , 'Mz' , 'Bx' , 'By' , 'Bz' , 'doppie', 'triple', 'flag']
 
     # Write header once at the start
@@ -49,11 +53,12 @@ if __name__ == "__main__":
         if config[0][2] == 12.8:
             thin_pos = 2
             configuration = ["m", "p", "g"]
+
         doppie, triple, flag = sim((config[2]), (config[1]), (config[0]), thin_pos, *configuration)
         row = [
             ' '.join(configuration),
-            str(config[1][0]), str(config[1][1]), str(config[1][2]),
             str(config[0][0]), str(config[0][1]), str(config[0][2]),
+            str(config[1][0]), str(config[1][1]), str(config[1][2]),
             str(config[2][0]), str(config[2][1]), str(config[2][2]),
             str(doppie),
             str(triple),

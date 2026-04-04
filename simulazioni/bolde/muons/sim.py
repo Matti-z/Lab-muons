@@ -3,13 +3,12 @@ import numpy as np
 from scipy.stats import norm
 from typing import Callable
 
-
 #! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
 
 N = 1e6
 L = 1e2
-z = 26
+z = 27
 
 Ha_1 = 12.8
 Hb_1 = 8.4
@@ -21,7 +20,6 @@ Ha_3 = 25.3
 Hb_3 = 12.8
 
 muon_dist_approx = lambda size=1: norm.rvs(loc = np.pi/2 , scale = 3 , size  = size)
-
 
 def HoM( pdf: Callable , approx: Callable):
     y = random()
@@ -48,13 +46,11 @@ class scintillatore:
         self.z1 = z - self.h/2
         self.z2 = z + self.h/2
 
-
 class muone:
     def __init__(self , L , z):
         self.x = L*random() - L/2
         self.y = L*random() - L/2
         self.z = z
-
 
     def angle_generation( self , S_b:scintillatore|None = None , S_t: scintillatore|None = None) :
 
@@ -89,25 +85,34 @@ def intersection( m: muone , S: scintillatore):
     x2,y2 = projection( m , S.z2)
 
     
-
+    # Left to right pass through the side of the scintillator
     if x1 < S.x1:
         if x2 > S.x1:
             bool_x = True
+    # Enter from the top, it's already in the scintillator
     elif (x1 <= S.x2) and (x1 >= S.x1):
         bool_x = True
+
+    # Right to Left pass through the side of the scintillator
     elif x1 > S.x2:
         if x2 < S.x2:
             bool_x = True
+
     
+
+    # Top to Bottom pass through the side of the scintillator
     if y1 < S.y1:
         if y2 > S.y1:
             bool_y = True
+
+    # Enter from the top, it's already in the scintillator
     elif (y1 <= S.y2) and (y1 >= S.y1):
         bool_y = True
+
+    # Bottom to Top pass through the side of the scintillator
     elif y1 > S.y2:
         if y2 < S.y2:
             bool_y = True
-
 
     return (bool_x & bool_y)
 
@@ -122,7 +127,6 @@ def sim(
     top_name: str = "Minerva",
     middle_name: str = "Partenope"
 ) -> tuple[int, int, int]:
-    n: int = 0
     # Set thickness: 1 for thin, 3 for thick
     thicknesses: list[int] = [3, 3, 3]
     if thin_position == 0:
@@ -144,7 +148,7 @@ def sim(
     triple: int = 0
     flag: int = 0
 
-    while n < N:
+    while flag < N:
         m: muone = muone(L, z)
         m.angle_generation(bot_scintillator, middle_scintillator)
         flag_B: bool = intersection(m, bot_scintillator)
@@ -155,19 +159,19 @@ def sim(
 
         if flag_T | flag_B | flag_M:
             flag += 1
-        if flag_T & flag_M:
+        if flag_T & flag_B:
             doppie += 1
         if flag_M & flag_T & flag_B:
             triple += 1
 
-        perc: int = int(np.round(n / N * 20))
+        perc: int = int(np.round(flag / N * 20))
 
         string: str = (
             "[" + "#" * perc + "-" * (20 - perc) + "]\t"
             + str(triple) + "/" + str(doppie) + "\t\t" + str(flag)
         )
         print("\r" + string, end="", flush=True)
-        n += 1
+    print("\r" + "*len(string)" , end="", flush=True )
     return doppie, triple, flag
 
 
