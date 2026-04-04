@@ -26,7 +26,7 @@ if __name__ == "__main__":
     minerva_position = [ 2 , 1 , 1]
     configuration = [[m , g , p ] , [g , m , p] , [g , m , p]]
     acronym = ["mgp" , "gmp" , "gmp"]
-    shift_vector = [ 0 , 15 , 30 , 45 , 60 , 70]
+    shift_vector = [ 0 , 15 , 30 , 45 , 60 , 75]
     
 
     csv_file = dir_path / "muon_distribution_simulation_results.csv"
