@@ -1,9 +1,9 @@
 from sim import sim
-import csv
 
 from pathlib import Path
 
-dir_path = Path(__file__).resolve().parent
+dir_path = Path(__file__).parent.resolve()
+
 
 
 Ha_1 = 12.8
@@ -15,55 +15,41 @@ Hb_2 = 12.8
 Ha_3 = 25.3
 Hb_3 = 12.8
 
-
+g = "giunone"
+m = "minerva"
+p = "partenope"
 
 if __name__ == "__main__":
-    height_array = [ [12.8, 8.4, 0], [23, 12.8, 0], [25.3, 12.8, 0] ]
-    pos_x_array = [ [0, 0, 0] for _ in range(3) ]
-    pos_y_array = [ [0, 0, 0] for _ in range(3) ]
-
-    xyz_array = []
-    shift_array = [0, 15, 30, 45, 60, 75]
-
-    for pos_x_row, pos_y_row, height_row in zip(pos_x_array, pos_y_array, height_array):
-        base_entry = [ [x, y, h] for x, y, h in zip(pos_x_row, pos_y_row, height_row) ]
-        for shift in shift_array:
-            modified_entry = [list(coord) for coord in base_entry] 
-            modified_entry[1][0] = shift 
-            xyz_array.append(modified_entry)
-    data_dict ={
-        'configuration': [],
-        'coordinates': [],
-        'doppie': [],
-        'triple': [],
-        'flag': []
-    }
+    top_coordinates = [( 0 , 0 , Ha_1) , (0 , 0 , Ha_2) , (0 , 0 , Ha_3)]
+    mid_coordinates = [( 0 , 0 , Hb_1) , (0 , 0 , Hb_2) , (0 , 0 , Hb_3)]
+    low_coordinates = [( 0 , 0 , 0) , (0 , 0 , 0) , (0 , 0 , 0)]
+    minerva_position = [ 2 , 1 , 1]
+    configuration = [[m , g , p ] , [g , m , p] , [g , m , p]]
+    acronym = ["mgp" , "gmp" , "gmp"]
+    shift_vector = [ 0 , 15 , 30 , 45 , 60 , 70]
+    
 
     csv_file = dir_path / "muon_distribution_simulation_results.csv"
     fieldnames = ['configuration', 'Tx', 'Ty' , 'Tz', 'Mx', 'My' , 'Mz' , 'Bx' , 'By' , 'Bz' , 'doppie', 'triple', 'flag']
 
     # Write header once at the start
-    # Write header once at the start
     with open(csv_file, mode='w', newline='') as f:
         f.write(','.join(fieldnames) + '\n')
 
-    for config in xyz_array:
-        thin_pos = 1
-        configuration = ["p", "m", "g"]
-        if config[0][2] == 12.8:
-            thin_pos = 2
-            configuration = ["m", "p", "g"]
-
-        doppie, triple, flag = sim((config[2]), (config[1]), (config[0]), thin_pos, *configuration)
-        row = [
-            ' '.join(configuration),
-            str(config[0][0]), str(config[0][1]), str(config[0][2]),
-            str(config[1][0]), str(config[1][1]), str(config[1][2]),
-            str(config[2][0]), str(config[2][1]), str(config[2][2]),
-            str(doppie),
-            str(triple),
-            str(flag)
-        ]
-        # Append each row after simulation
-        with open(csv_file, mode='a', newline='') as f:
-            f.write(','.join(row) + '\n')
+    for i in range(len(top_coordinates)):
+        for delta in shift_vector:
+            mid_coord = list(mid_coordinates[i])
+            mid_coord[0] = delta
+            doppie, triple, flag = sim( top_coordinates[i] , tuple(mid_coord) , low_coordinates[i] , minerva_position[i] , *configuration[i])
+            row = [
+                ' '.join(acronym[i]),
+                str(top_coordinates[i][0]), str(top_coordinates[i][1]), str(top_coordinates[i][2]),
+                str(delta), str(mid_coordinates[i][1]), str(mid_coordinates[i][2]),
+                str(low_coordinates[i][0]), str(low_coordinates[i][1]), str(low_coordinates[i][2]),
+                str(doppie),
+                str(triple),
+                str(flag)
+            ]
+            # Append each row after simulation
+            with open(csv_file, mode='a', newline='') as f:
+                f.write(','.join(row) + '\n')
