@@ -6,7 +6,7 @@ from typing import Callable
 #! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
 
-N = 1e6
+N = 1e5
 L = 1e2
 z = 27
 
@@ -31,20 +31,20 @@ def muon_dist( x ):
     return np.sin(x)**2
 
 class scintillatore:
-    def __init__(self , l , h , p , name = ""):
-        self.l = l
-        self.h = h
-        self.p = p
+    def __init__(self , lenght , height , depth , name = ""):
+        self.lenght = lenght
+        self.height = height
+        self.depth = depth
         self.name = name
         pass
 
     def position( self , x , y , z):
-        self.x1 = x - self.l/2
-        self.x2 = x + self.l/2
-        self.y1 = y - self.p/2
-        self.y2 = y + self.p/2
-        self.z1 = z - self.h/2
-        self.z2 = z + self.h/2
+        self.x1 = x - self.lenght/2
+        self.x2 = x + self.lenght/2
+        self.y1 = y - self.depth/2
+        self.y2 = y + self.depth/2
+        self.z1 = z - self.height/2
+        self.z2 = z + self.height/2
 
 class muone:
     def __init__(self , L , z):
@@ -119,13 +119,13 @@ def intersection( m: muone , S: scintillatore):
 
 
 def sim(
-    bot_pos: tuple[float, float, float],
     top_pos: tuple[float, float, float],
     middle_pos: tuple[float, float, float],
+    bot_pos: tuple[float, float, float],
     thin_position: int = 1,  # 0=bottom, 1=middle, 2=top
-    bot_name: str = "Giunone",
     top_name: str = "Minerva",
-    middle_name: str = "Partenope"
+    middle_name: str = "Partenope",
+    bot_name: str = "Giunone"
 ) -> tuple[int, int, int]:
     # Set thickness: 1 for thin, 3 for thick
     thicknesses: list[int] = [3, 3, 3]
@@ -137,9 +137,9 @@ def sim(
         thicknesses[2] = 1
 
     bot_scintillator: scintillatore = scintillatore(80, thicknesses[0], 30, bot_name)
-    top_scintillator: scintillatore = scintillatore(80, thicknesses[2], 30, top_name)
     middle_scintillator: scintillatore = scintillatore(80, thicknesses[1], 30, middle_name)
-
+    top_scintillator: scintillatore = scintillatore(80, thicknesses[2], 30, top_name)
+    
     bot_scintillator.position(*bot_pos)
     top_scintillator.position(*top_pos)
     middle_scintillator.position(*middle_pos)
@@ -148,7 +148,7 @@ def sim(
     triple: int = 0
     flag: int = 0
 
-    while flag < N:
+    while doppie < N:
         m: muone = muone(L, z)
         m.angle_generation(bot_scintillator, middle_scintillator)
         flag_B: bool = intersection(m, bot_scintillator)
@@ -157,21 +157,21 @@ def sim(
 
         del m
 
-        if flag_T | flag_B | flag_M:
+        if (flag_T | flag_B | flag_M):
             flag += 1
-        if flag_T & flag_B:
+        if (flag_T & flag_B):
             doppie += 1
-        if flag_M & flag_T & flag_B:
+        if (flag_M & flag_T & flag_B):
             triple += 1
 
-        perc: int = int(np.round(flag / N * 20))
+        perc: int = int(np.round(doppie / N * 20))
 
         string: str = (
             "[" + "#" * perc + "-" * (20 - perc) + "]\t"
-            + str(triple) + "/" + str(doppie) + "\t\t" + str(flag)
+            + str(triple) + "/" + str(doppie)
         )
         print("\r" + string, end="", flush=True)
-    print("\r" + "*len(string)" , end="", flush=True )
+    print("\r" + " "*3*len(string) , end="", flush=True )
     return doppie, triple, flag
 
 

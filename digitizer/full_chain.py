@@ -12,7 +12,7 @@ except ImportError:
 
 
 
-default_dir = str(Path(".").absolute()).split("/Lab-muons")[0]+"/Lab-muons/"
+default_dir = str(Path(".").resolve()).split("/Lab-muons")[0]+"/Lab-muons/"
 universal_dir = lambda path: default_dir + path
 
 
