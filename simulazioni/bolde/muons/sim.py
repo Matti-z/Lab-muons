@@ -7,7 +7,8 @@ from typing import Callable
 
 
 N = 1e5
-L = 1e2
+Lx = 3e2
+Ly = 1e2
 z = 27
 
 Ha_1 = 12.8
@@ -47,9 +48,9 @@ class scintillatore:
         self.z2 = z + self.height/2
 
 class muone:
-    def __init__(self , L , z):
-        self.x = L*random() - L/2
-        self.y = L*random() - L/2
+    def __init__(self , Lx , Ly , z):
+        self.x = Lx*random() - Lx/2
+        self.y = Ly*random() - Ly/2
         self.z = z
 
     def angle_generation( self , S_b:scintillatore|None = None , S_t: scintillatore|None = None) :
@@ -128,13 +129,13 @@ def sim(
     bot_name: str = "Giunone"
 ) -> tuple[int, int, int]:
     # Set thickness: 1 for thin, 3 for thick
-    thicknesses: list[int] = [3, 3, 3]
+    thicknesses: list[int] = [4,4,4]
     if thin_position == 0:
-        thicknesses[0] = 1
+        thicknesses[0] = 2
     elif thin_position == 1:
-        thicknesses[1] = 1
+        thicknesses[1] = 2
     elif thin_position == 2:
-        thicknesses[2] = 1
+        thicknesses[2] = 2
 
     bot_scintillator: scintillatore = scintillatore(80, thicknesses[0], 30, bot_name)
     middle_scintillator: scintillatore = scintillatore(80, thicknesses[1], 30, middle_name)
@@ -149,7 +150,7 @@ def sim(
     flag: int = 0
 
     while doppie < N:
-        m: muone = muone(L, z)
+        m: muone = muone(Lx , Ly, z)
         m.angle_generation(bot_scintillator, middle_scintillator)
         flag_B: bool = intersection(m, bot_scintillator)
         flag_T: bool = intersection(m, top_scintillator)
