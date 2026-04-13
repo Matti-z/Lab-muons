@@ -32,6 +32,10 @@ void usage(){
 
 void check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vector<short>> &trace_vector, int channel)
 {
+    /*
+    * this function takes as input the datafile iss, the save status, the trace vector and the channel
+    * it updates the save variable to see if the trace is worth saving or not
+    */
     int x;
     int min = 0;
     int max = 0;
@@ -72,25 +76,26 @@ void triple_check(int last_trace_index, int traceStartingIndex ,double freq, std
     int baselinePartenope = partenope[0]; 
     int startingLenght = timestamps.size();
 
+    // if an impulse in the triple signal is detected -> the one detected is the double impulse
     for (int traceIndex = traceStartingIndex; traceIndex > traceStartingIndex - PULSE_WIDTH ; traceIndex--){
-        
         if (tripla[traceIndex] < baselineTripla - DELTA){
             tripla_in_discrimination = true;
-            // traceStartingIndex = traceIndex;
+            traceStartingIndex = traceIndex;
             break;
         }
     }
     
-
+    // loop to actually find the timestamps
     for (int traceIndex = traceStartingIndex; traceIndex >= 0; traceIndex--)
     {
-        double timestamp = double(last_trace_index - traceIndex) / freq;
+        
         if (tripla[traceIndex] < baselineTripla - DELTA && !isTriggered)
         {
+            double timestamp = double(last_trace_index - traceIndex) / freq;
             timestamps.push_back(timestamp);
             isTriggered = true;
             if (tripla_in_discrimination){
-                
+
                 if( timestamps.size() <= startingLenght)
                 timestamps.pop_back();
                 continue;
@@ -129,17 +134,17 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
     int baselineGiunone = giunone[0];
     int baselinePartenope = partenope[0];
 
-
+    // loop over a short range in which the electron should fall into
     for( int g_index = last_trace_index ; g_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; g_index--){
-        if(giunone[g_index] < baselineGiunone - DELTA){
+        if(giunone[g_index] < baselineGiunone - DELTA){ // if the electron is spotted
             triple_check(last_trace_index, g_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(true);
             break;
         }
     }
-
+    // loop over a short range in which the electron should fall into
     for( int p_index = last_trace_index ; p_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; p_index--){
-        if(partenope[p_index] < baselinePartenope - DELTA){
+        if(partenope[p_index] < baselinePartenope - DELTA){ // if the electron is spotted
             triple_check(last_trace_index, p_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(false);
             break;
@@ -172,7 +177,7 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& timestamps 
         }
 
         std::istringstream iss(trace.text().as_string());
-        
+        // check if the dataset is worth to save
         check_multitrace(iss, save, trace_vector, channel);
 
         if (trace_vector[channel].size() != size) { std::cout << "trace of unexpected size detected\n"; exit(-1); }
