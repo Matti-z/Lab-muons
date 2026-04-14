@@ -20,16 +20,14 @@ Hb_2 = 12.8
 Ha_3 = 25.3
 Hb_3 = 12.8
 
-muon_dist_approx = lambda size=1: norm.rvs(loc = np.pi/2 , scale = 3 , size  = size)
+muon_dist_approx = norm(np.pi/2 , 2)
+muon_dist = lambda x: np.where((x > 0) & (x<np.pi) , np.sin(x)**(2/3), 0)
 
-def HoM( pdf: Callable , approx: Callable):
+def HoM( pdf: Callable , approx):
     y = random()
-    x = approx()
+    x = approx.rvs()
     if( y < pdf(x)): return x
     return HoM(pdf , approx)
-
-def muon_dist( x ):
-    return np.sin(x)**2
 
 class scintillatore:
     def __init__(self , lenght , height , depth , name = ""):
@@ -199,7 +197,7 @@ if __name__ == "__main__":
     flag = 0
 
     while( n < N):
-        m = muone( L , z)
+        m = muone( Lx , Ly , z)
         m.angle_generation( G , P)
         iG = intersection( m , G)
         iM = intersection( m , M)
@@ -241,7 +239,7 @@ if __name__ == "__main__":
     triple = 0
 
     while( n < N):
-        m = muone( L , z)
+        m = muone( Lx , Ly , z)
         m.angle_generation( G , M)
         iG = intersection( m , G)
         iP = intersection( m , P)
