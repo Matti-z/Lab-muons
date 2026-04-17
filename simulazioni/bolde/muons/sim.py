@@ -7,8 +7,8 @@ from typing import Callable
 
 
 N = 1e5
-Lx = 3e2
-Ly = 1e2
+Lx = 5e2
+Ly = 5e2
 z = 27
 
 Ha_1 = 12.8
