@@ -29,7 +29,7 @@ if __name__ == "__main__":
     shift_vector = [ 0 , 15 , 30 , 45 , 60 , 75]
     
 
-    csv_file = dir_path / "muon_distribution_simulation_results.csv"
+    csv_file = dir_path / "thic_distribution.csv"
     fieldnames = ['configuration', 'Tx', 'Ty' , 'Tz', 'Mx', 'My' , 'Mz' , 'Bx' , 'By' , 'Bz' , 'doppie', 'triple', 'flag']
 
     # Write header once at the start
