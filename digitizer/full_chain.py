@@ -21,7 +21,7 @@ universal_dir = lambda path: default_dir + path
 
 file = "multichannel_parser"
 drive = True
-xml_path = universal_dir("digitizer/digitizer_trial/try.xml")
+xml_path = ""
 xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
 csv_folder = universal_dir("Data/timestamp/")
 csv_settings_folder = universal_dir("Data/settings/")
@@ -40,7 +40,7 @@ if file == "root_parser":
     process_root_files(root_path , csv_folder , xml_filename)
     root_settings_to_csv( root_path , csv_settings_folder , xml_filename)
 elif file == "multichannel_parser" or file == "inverse_parser":
-    result = subprocess.run([universal_dir("digitizer/bin/" + file), xml_path, csv_folder , csv_settings_folder], capture_output=False)
+    subprocess.run([universal_dir("digitizer/bin/" + file), xml_path, csv_folder , csv_settings_folder], capture_output=False)
 else:
     raise KeyError("file is not one of the executable")
     
