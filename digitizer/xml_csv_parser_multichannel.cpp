@@ -72,9 +72,11 @@ void triple_check(int traceStartingIndex ,double freq, std::vector<std::vector<s
 
     
     int doubleCheckIndex = traceStartingIndex;
+    int afterDoubleIndex;
     int baselineTripla = tripla[0];
     int baselineGiunone = giunone[0];
     int baselinePartenope = partenope[0]; 
+    int traceStart = tripla.size();
     int startingLenght = timestamps.size();
 
     // if an impulse in the triple signal is detected -> move till it's finished
@@ -84,10 +86,10 @@ void triple_check(int traceStartingIndex ,double freq, std::vector<std::vector<s
         }
     }
     
-    traceStartingIndex = doubleCheckIndex;
+    afterDoubleIndex = doubleCheckIndex;
 
     // loop to actually find the timestamps
-    for (int traceIndex = traceStartingIndex; traceIndex >= 0; traceIndex--)
+    for (int traceIndex = afterDoubleIndex; traceIndex >= 0; traceIndex--)
     {
         // detect timestamp -> start of triple signal
         if (tripla[traceIndex] < baselineTripla - DELTA && !isTriggered)
@@ -243,7 +245,6 @@ int main(int argc, char const *argv[])
 
 
     std::vector<double> timestamp;
-    std::vector<std::vector<double>> multichannel_timestamp; 
     std::vector<bool> dataset_divider;
     
     pugi::xml_document history;
