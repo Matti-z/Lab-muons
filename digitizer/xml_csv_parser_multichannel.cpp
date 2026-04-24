@@ -72,7 +72,7 @@ void triple_check(int traceStartingIndex ,double freq, std::vector<std::vector<s
 
     
     int doubleCheckIndex = traceStartingIndex;
-    int afterDoubleIndex;
+    int afterDoubleIndex = traceStartingIndex;
     int baselineTripla = tripla[0];
     int baselineGiunone = giunone[0];
     int baselinePartenope = partenope[0]; 
@@ -80,13 +80,13 @@ void triple_check(int traceStartingIndex ,double freq, std::vector<std::vector<s
     int startingLenght = timestamps.size();
 
     // if an impulse in the triple signal is detected -> move till it's finished
-    for (; doubleCheckIndex >=0 ; doubleCheckIndex--){
-        if (tripla[doubleCheckIndex] > baselineTripla - DELTA && partenope[doubleCheckIndex] > baselinePartenope - DELTA && giunone[doubleCheckIndex] > baselineGiunone - DELTA){
-            break;
-        }
-    }
+    // for (; doubleCheckIndex >=0 ; doubleCheckIndex--){
+    //     if (tripla[doubleCheckIndex] > baselineTripla - DELTA && partenope[doubleCheckIndex] > baselinePartenope - DELTA && giunone[doubleCheckIndex] > baselineGiunone - DELTA){
+    //         break;
+    //     }
+    // }
     
-    afterDoubleIndex = doubleCheckIndex;
+    // afterDoubleIndex = doubleCheckIndex;
 
     // loop to actually find the timestamps
     for (int traceIndex = afterDoubleIndex; traceIndex >= 0; traceIndex--)
