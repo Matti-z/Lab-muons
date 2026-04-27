@@ -21,7 +21,7 @@ universal_dir = lambda path: default_dir + path
 
 file = "multichannel_parser"
 drive = True
-xml_path = universal_dir("big_data/salt_27_03_2026_16_36.xml")
+xml_path = universal_dir("big_data/al_20_04_2026_12_17.xml")
 xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
 csv_folder = universal_dir("Data/timestamp/")
 csv_settings_folder = universal_dir("Data/settings/")
@@ -36,11 +36,11 @@ os.makedirs(os.path.dirname(root_path), exist_ok=True)
 os.makedirs(os.path.dirname(csv_settings_folder), exist_ok=True)
 
 if file == "root_parser":
-    subprocess.run([universal_dir("project/bin/root_parser"), xml_path, root_path], capture_output=False)
+    subprocess.run([universal_dir("digitizer/bin/root_parser"), xml_path, root_path], capture_output=False)
     process_root_files(root_path , csv_folder , xml_filename)
     root_settings_to_csv( root_path , csv_settings_folder , xml_filename)
 elif file == "multichannel_parser" or file == "inverse_parser":
-    result = subprocess.run([universal_dir("project/bin/" + file), xml_path, csv_folder , csv_settings_folder], capture_output=False)
+    subprocess.run([universal_dir("digitizer/bin/" + file), xml_path, csv_folder , csv_settings_folder], capture_output=False)
 else:
     raise KeyError("file is not one of the executable")
     

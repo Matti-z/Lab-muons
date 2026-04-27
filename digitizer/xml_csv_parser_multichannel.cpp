@@ -32,6 +32,10 @@ void usage(){
 
 void check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vector<short>> &trace_vector, int channel)
 {
+    /*
+    * this function takes as input the datafile iss, the save status, the trace vector and the channel
+    * it updates the save variable to see if the trace is worth saving or not
+    */
     int x;
     int min = 0;
     int max = 0;
@@ -56,61 +60,55 @@ void check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vec
     }
 }
 
-void triple_check(int last_trace_index, int traceStartingIndex ,double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &timestamps)
+void triple_check(int traceStartingIndex ,double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &timestamps)
 {
     bool isTriggered = false;
-    bool giunone_signal = false;
-    bool tripla_in_discrimination = false; 
+    bool giunone_signal = false; 
     bool hasPartenopeTriggered = false;
     
     std::vector<short> tripla = trace_vector[0];
     std::vector<short> partenope = trace_vector[1];
     std::vector<short> giunone = trace_vector[2];
 
+    
+    int doubleCheckIndex = traceStartingIndex;
+    int afterDoubleIndex;
     int baselineTripla = tripla[0];
     int baselineGiunone = giunone[0];
     int baselinePartenope = partenope[0]; 
+    int traceStart = tripla.size();
     int startingLenght = timestamps.size();
 
-    for (int traceIndex = traceStartingIndex; traceIndex > traceStartingIndex - PULSE_WIDTH ; traceIndex--){
-        
-        if (tripla[traceIndex] < baselineTripla - DELTA){
-            tripla_in_discrimination = true;
-            // traceStartingIndex = traceIndex;
+    // if an impulse in the triple signal is detected -> move till it's finished
+    for (; doubleCheckIndex >=0 ; doubleCheckIndex--){
+        if (tripla[doubleCheckIndex] > baselineTripla - DELTA && partenope[doubleCheckIndex] > baselinePartenope - DELTA && giunone[doubleCheckIndex] > baselineGiunone - DELTA){
             break;
         }
     }
     
+    afterDoubleIndex = doubleCheckIndex;
 
-    for (int traceIndex = traceStartingIndex; traceIndex >= 0; traceIndex--)
+    // loop to actually find the timestamps
+    for (int traceIndex = afterDoubleIndex; traceIndex >= 0; traceIndex--)
     {
-        double timestamp = double(last_trace_index - traceIndex) / freq;
+        // detect timestamp -> start of triple signal
         if (tripla[traceIndex] < baselineTripla - DELTA && !isTriggered)
         {
+            double timestamp = double(traceStartingIndex - traceIndex) / freq;
             timestamps.push_back(timestamp);
             isTriggered = true;
-            if (tripla_in_discrimination){
-                
-                if( timestamps.size() <= startingLenght)
-                timestamps.pop_back();
-                continue;
-            }
         }
 
+        // detect falltime -> stop of triple signal
         if (tripla[traceIndex] > baselineTripla - DELTA && isTriggered){
             isTriggered = false;
-            tripla_in_discrimination = false;
             if( !giunone_signal) {
-                if( timestamps.size() <= startingLenght)
                 timestamps.pop_back();
-                giunone_signal = false;
                 continue;
             }
-            giunone_signal = false;
         }
         
-        if ( partenope[traceIndex] < baselinePartenope - DELTA && isTriggered && !hasPartenopeTriggered && !tripla_in_discrimination){
-            if( timestamps.size() <= startingLenght)
+        if ( partenope[traceIndex] < baselinePartenope - DELTA && isTriggered && !hasPartenopeTriggered){
             timestamps.pop_back();
             hasPartenopeTriggered = true;
             continue;
@@ -129,20 +127,20 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
     int baselineGiunone = giunone[0];
     int baselinePartenope = partenope[0];
 
-
+    // loop over a short range in which the electron should fall into
     for( int g_index = last_trace_index ; g_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; g_index--){
-        if(giunone[g_index] < baselineGiunone - DELTA){
-            triple_check(last_trace_index, g_index , freq, trace_vector, timestamps);
+        if(giunone[g_index] < baselineGiunone - DELTA){ // if the electron is spotted
+            triple_check(g_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(true);
-            break;
+            return;
         }
     }
-
+    // loop over a short range in which the electron should fall into
     for( int p_index = last_trace_index ; p_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; p_index--){
-        if(partenope[p_index] < baselinePartenope - DELTA){
-            triple_check(last_trace_index, p_index , freq, trace_vector, timestamps);
+        if(partenope[p_index] < baselinePartenope - DELTA){ // if the electron is spotted
+            triple_check(p_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(false);
-            break;
+            return;
         }
     }
 
@@ -172,13 +170,12 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& timestamps 
         }
 
         std::istringstream iss(trace.text().as_string());
-        
+        // check if the dataset is worth to save
         check_multitrace(iss, save, trace_vector, channel);
 
         if (trace_vector[channel].size() != size) { std::cout << "trace of unexpected size detected\n"; exit(-1); }
     }
     if (save) timestamp_calculator(last_trace_index, freq, trace_vector, timestamps , discriminator);
-    std::cout<< timestamps.size() << "\t" << discriminator.size()<< "\n";
     
     if ( timestamps.size() != discriminator.size()){
         std::cout<< timestamps.size() << "\t" << discriminator.size()<< "\n";
@@ -248,7 +245,6 @@ int main(int argc, char const *argv[])
 
 
     std::vector<double> timestamp;
-    std::vector<std::vector<double>> multichannel_timestamp; 
     std::vector<bool> dataset_divider;
     
     pugi::xml_document history;
