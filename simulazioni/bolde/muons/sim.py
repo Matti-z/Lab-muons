@@ -1,6 +1,9 @@
 from random import random
 import numpy as np
 from scipy.stats import norm
+from scipy.integrate import trapezoid
+import pandas as pd
+
 from typing import Callable
 
 #! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
@@ -31,7 +34,7 @@ def HoM( pdf: Callable , approx: Callable):
 def muon_dist( x ):
     return np.sin(x)**2
 
-class scintillatore:
+class Scintillatore:
     def __init__(self , lenght , height , depth , name = ""):
         self.lenght = lenght
         self.height = height
@@ -46,28 +49,102 @@ class scintillatore:
         self.y2 = y + self.depth/2
         self.z1 = z - self.height/2
         self.z2 = z + self.height/2
+        
+class Materiale(Scintillatore):
+    def __init__(self , lenght , height , depth , PDG_file, density , name = "", ):
+        super().__init__(lenght , height , depth , name)
+        self.PDG = PDG_file
+        self.density = density
+        self.__setup_radiation_lenght()
 
-class muone:
-    def __init__(self , Lx , Ly , z):
+    def __import_file( self):
+        df = pd.read_csv(
+            self.PDG,
+            sep=r"\s+",
+            skiprows=10,
+            header=None,
+            names=["T", "p", "Ionization", "brems", "pair", "photonuc", "Radloss", "dE/dx", "CSDA Range", "delta", "beta", "dE/dx_R"]
+        )
+        df = df[(df["CSDA Range"] != 'Muon')]
+        df = df[(df["CSDA Range"] != 'Minimum')]
+        df = df.astype({
+            "T": float,
+            "p": float,
+            "Ionization": float,
+            "brems": float,
+            "pair": float,
+            "photonuc": float,
+            "Radloss": float,
+            "dE/dx": float,
+            "CSDA Range": float,
+            "delta": float,
+            "beta": float,
+            "dE/dx_R": float,
+        })
+        self.df = df
+
+    def __setup_radiation_lenght(self):
+        self.__import_file()
+        self.T = self.df["T"].to_numpy() # kinetic energy
+        self.sp = self.density * self.df["dE/dx"].to_numpy() # stopping power
+        self.radiation_lenght = [ trapezoid(1/self.sp[:i] , self.T[:i]) for i in range(1 , len(self.sp))]
+
+    def energy_calculation( self , in_point, out_point , energy):
+        distance = np.sum( [(in_point[i] - out_point[i])**2 for i in range(3)])
+        if energy in self.T:
+
+        
+
+
+
+    
+
+class Muone:
+    def __init__(self , Lx = None , Ly = None, z = None , theta=None , phi=None , position = False , angle = False):
+        # store modes and optionally initialize position/angle
+        self._position_mode = bool(position)
+        self._angle_mode = bool(angle)
+
+        # optionally set initial spatial coordinates
+        if not np.isnan([Lx , Ly, z]).any():# type: ignore 
+            # call the public method which dispatches to the selected mode
+            self.sp_coord(Lx, Ly, z)
+
+        # optionally set initial angles
+        if not np.isnan([Lx , Ly, z]).any():# type: ignore 
+            # call the public method which dispatches to the selected mode
+            self.ang_coord(theta, phi)
+
+
+    def __random_position(self , Lx , Ly , z):
         self.x = Lx*random() - Lx/2
         self.y = Ly*random() - Ly/2
         self.z = z
 
-    def angle_generation( self , S_b:scintillatore|None = None , S_t: scintillatore|None = None) :
+    def __determinate_position(self , x , y , z):
+        self.x = x
+        self.y = y 
+        self.z = z
+
+    def sp_coord(self, *args, **kwargs):
+        if self._position_mode:
+            return self.__determinate_position(*args, **kwargs)
+        return self.__random_position(*args, **kwargs)
+
+    def __angle_generation( self , S_b:Scintillatore|None = None , S_t: Scintillatore|None = None) :
 
         self.theta = HoM( muon_dist , muon_dist_approx)
         self.phi = HoM( muon_dist , muon_dist_approx)
-
-        # if type(S_b) is scintillatore and type(S_t) is scintillatore:
-        #     if self.x< S_b.x1:
-        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x1 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x2 - self.x))
-        #     if self.x > S_b.x2:
-        #         self.theta = random()* (np.arctan((self.z - S_b.z1)/( S_b.x2 - self.x)) - np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))) + np.arctan((self.z - S_t.z2)/( S_t.x1 - self.x))
-        #     if self.y < S_b.y1:
-        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y1 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y2 - self.y))
-        #     if self.y > S_b.y2:
-        #         self.phi = random()* (np.arctan((self.z - S_b.z1)/( S_b.y2 - self.y))- np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))) + np.arctan((self.z - S_t.z2)/( S_t.y1 - self.y))
         pass
+
+    def __determinate_angle(self, theta , phi):
+        self.theta = theta
+        self.phi = phi
+
+    def ang_coord(self, *args, **kwargs):
+        if self._angle_mode:
+            return self.__determinate_angle(*args, **kwargs)
+        return self.__angle_generation(*args, **kwargs)
 
 
 
@@ -78,7 +155,7 @@ def projection( m , z):
     y1 = m.y + dy
     return x1 , y1
 
-def intersection( m: muone , S: scintillatore):
+def intersection( m: Muone , S: Scintillatore):
 
     bool_x = False
     bool_y = False
@@ -117,7 +194,7 @@ def intersection( m: muone , S: scintillatore):
 
     return (bool_x & bool_y)
 
-
+def energy_evaluation( m: Muone , Giunone: Scintillatore,  Minerva: Scintillatore, materiale: Materiale)
 
 def sim(
     top_pos: tuple[float, float, float],
@@ -137,9 +214,9 @@ def sim(
     elif thin_position == 2:
         thicknesses[2] = 2
 
-    bot_scintillator: scintillatore = scintillatore(80, thicknesses[0], 30, bot_name)
-    middle_scintillator: scintillatore = scintillatore(80, thicknesses[1], 30, middle_name)
-    top_scintillator: scintillatore = scintillatore(80, thicknesses[2], 30, top_name)
+    bot_scintillator: Scintillatore = Scintillatore(80, thicknesses[0], 30, bot_name)
+    middle_scintillator: Scintillatore = Scintillatore(80, thicknesses[1], 30, middle_name)
+    top_scintillator: Scintillatore = Scintillatore(80, thicknesses[2], 30, top_name)
     
     bot_scintillator.position(*bot_pos)
     top_scintillator.position(*top_pos)
@@ -150,8 +227,9 @@ def sim(
     flag: int = 0
 
     while doppie < N:
-        m: muone = muone(Lx , Ly, z)
-        m.angle_generation(bot_scintillator, middle_scintillator)
+        m: Muone = Muone(Lx , Ly, z)
+        m.ang_coord(bot_scintillator, middle_scintillator)
+        
         flag_B: bool = intersection(m, bot_scintillator)
         flag_T: bool = intersection(m, top_scintillator)
         flag_M: bool = intersection(m, middle_scintillator)
@@ -164,6 +242,7 @@ def sim(
             doppie += 1
         if (flag_M & flag_T & flag_B):
             triple += 1
+            energy_evaluation( m , top_scintillator , middle_scintillator)
 
         perc: int = int(np.round(doppie / N * 20))
 
@@ -186,9 +265,9 @@ if __name__ == "__main__":
 #---------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------
     n = 0
-    G = scintillatore( 80 , 3 , 30 , "Giunone")
-    M = scintillatore( 80 , 1 , 30 , "Minerva")
-    P = scintillatore( 80 , 3 , 30 , "Partenope")
+    G = Scintillatore( 80 , 3 , 30 , "Giunone")
+    M = Scintillatore( 80 , 1 , 30 , "Minerva")
+    P = Scintillatore( 80 , 3 , 30 , "Partenope")
 
     G.position( 0 , 0 , 0)
     M.position( 0 , 0 , Hb_2)
@@ -199,8 +278,8 @@ if __name__ == "__main__":
     flag = 0
 
     while( n < N):
-        m = muone( L , z)
-        m.angle_generation( G , P)
+        m = Muone( Lx , Ly , z)
+        m.ang_coord( G , P)
         iG = intersection( m , G)
         iM = intersection( m , M)
         iP = intersection( m , P)
@@ -228,9 +307,9 @@ if __name__ == "__main__":
 #---------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------
     n = 0
-    P = scintillatore( 80 , 3 , 30 , "Partenope")
-    G = scintillatore( 80 , 3 , 30 , "bot_scintillatoriunone")
-    M = scintillatore( 80 , 1 , 30 , "Minerva")
+    P = Scintillatore( 80 , 3 , 30 , "Partenope")
+    G = Scintillatore( 80 , 3 , 30 , "bot_scintillatoriunone")
+    M = Scintillatore( 80 , 1 , 30 , "Minerva")
 
     G.position( 0 , 0 , 0)
     P.position( 0 , 0 , Hb_2)
@@ -241,8 +320,8 @@ if __name__ == "__main__":
     triple = 0
 
     while( n < N):
-        m = muone( L , z)
-        m.angle_generation( G , M)
+        m = Muone( Lx , Ly , z)
+        m.ang_coord( G , M)
         iG = intersection( m , G)
         iP = intersection( m , P)
         iM = intersection( m , M)
