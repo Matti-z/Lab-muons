@@ -1,0 +1,7 @@
+frequency[hz],250000000.000000,
+resolution[bytes],12,
+volt_low[V],0.000000,
+volt_high[V],2.000000,
+postTrg[%],0.000000,
+size[bits],2048,
+delta[bits],500,

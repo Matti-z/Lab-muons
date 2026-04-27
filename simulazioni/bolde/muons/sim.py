@@ -10,8 +10,8 @@ from typing import Callable
 
 
 N = 1e5
-Lx = 3e2
-Ly = 1e2
+Lx = 5e2
+Ly = 5e2
 z = 27
 
 Ha_1 = 12.8
@@ -23,11 +23,12 @@ Hb_2 = 12.8
 Ha_3 = 25.3
 Hb_3 = 12.8
 
-muon_dist_approx = lambda size=1: norm.rvs(loc = np.pi/2 , scale = 3 , size  = size)
+muon_dist_approx = norm(np.pi/2 , 2)
+muon_dist = lambda x: np.where((x > 0) & (x<np.pi) , np.sin(x)**(2/3), 0)
 
-def HoM( pdf: Callable , approx: Callable):
+def HoM( pdf: Callable , approx):
     y = random()
-    x = approx()
+    x = approx.rvs()
     if( y < pdf(x)): return x
     return HoM(pdf , approx)
 
