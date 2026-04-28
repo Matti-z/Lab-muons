@@ -5,6 +5,7 @@ from scipy.integrate import trapezoid
 import pandas as pd
 
 from typing import Callable
+from classes import Muone, Scintillatore
 
 #! modificare la bot_scintillatorenerazione dei muoni, facendola al contrario: partire col 100% di doppie e vedere quali prendono il 3° e quali no
 
@@ -23,129 +24,6 @@ Hb_2 = 12.8
 Ha_3 = 25.3
 Hb_3 = 12.8
 
-muon_dist_approx = norm(np.pi/2 , 2)
-muon_dist = lambda x: np.where((x > 0) & (x<np.pi) , np.sin(x)**(2/3), 0)
-
-def HoM( pdf: Callable , approx):
-    y = random()
-    x = approx.rvs()
-    if( y < pdf(x)): return x
-    return HoM(pdf , approx)
-
-def muon_dist( x ):
-    return np.sin(x)**2
-
-class Scintillatore:
-    def __init__(self , lenght , height , depth , name = ""):
-        self.lenght = lenght
-        self.height = height
-        self.depth = depth
-        self.name = name
-        pass
-
-    def position( self , x , y , z):
-        self.x1 = x - self.lenght/2
-        self.x2 = x + self.lenght/2
-        self.y1 = y - self.depth/2
-        self.y2 = y + self.depth/2
-        self.z1 = z - self.height/2
-        self.z2 = z + self.height/2
-        
-class Materiale(Scintillatore):
-    def __init__(self , lenght , height , depth , PDG_file, density , name = "", ):
-        super().__init__(lenght , height , depth , name)
-        self.PDG = PDG_file
-        self.density = density
-        self.__setup_radiation_lenght()
-
-    def __import_file( self):
-        df = pd.read_csv(
-            self.PDG,
-            sep=r"\s+",
-            skiprows=10,
-            header=None,
-            names=["T", "p", "Ionization", "brems", "pair", "photonuc", "Radloss", "dE/dx", "CSDA Range", "delta", "beta", "dE/dx_R"]
-        )
-        df = df[(df["CSDA Range"] != 'Muon')]
-        df = df[(df["CSDA Range"] != 'Minimum')]
-        df = df.astype({
-            "T": float,
-            "p": float,
-            "Ionization": float,
-            "brems": float,
-            "pair": float,
-            "photonuc": float,
-            "Radloss": float,
-            "dE/dx": float,
-            "CSDA Range": float,
-            "delta": float,
-            "beta": float,
-            "dE/dx_R": float,
-        })
-        self.df = df
-
-    def __setup_radiation_lenght(self):
-        self.__import_file()
-        self.T = self.df["T"].to_numpy() # kinetic energy
-        self.sp = self.density * self.df["dE/dx"].to_numpy() # stopping power
-        self.radiation_lenght = [ trapezoid(1/self.sp[:i] , self.T[:i]) for i in range(1 , len(self.sp))]
-
-    def energy_calculation( self , in_point, out_point , energy):
-        distance = np.sum( [(in_point[i] - out_point[i])**2 for i in range(3)])
-        if energy in self.T:
-
-        
-
-
-
-    
-
-class Muone:
-    def __init__(self , Lx = None , Ly = None, z = None , theta=None , phi=None , position = False , angle = False):
-        # store modes and optionally initialize position/angle
-        self._position_mode = bool(position)
-        self._angle_mode = bool(angle)
-
-        # optionally set initial spatial coordinates
-        if not np.isnan([Lx , Ly, z]).any():# type: ignore 
-            # call the public method which dispatches to the selected mode
-            self.sp_coord(Lx, Ly, z)
-
-        # optionally set initial angles
-        if not np.isnan([Lx , Ly, z]).any():# type: ignore 
-            # call the public method which dispatches to the selected mode
-            self.ang_coord(theta, phi)
-
-
-    def __random_position(self , Lx , Ly , z):
-        self.x = Lx*random() - Lx/2
-        self.y = Ly*random() - Ly/2
-        self.z = z
-
-    def __determinate_position(self , x , y , z):
-        self.x = x
-        self.y = y 
-        self.z = z
-
-    def sp_coord(self, *args, **kwargs):
-        if self._position_mode:
-            return self.__determinate_position(*args, **kwargs)
-        return self.__random_position(*args, **kwargs)
-
-    def __angle_generation( self , S_b:Scintillatore|None = None , S_t: Scintillatore|None = None) :
-
-        self.theta = HoM( muon_dist , muon_dist_approx)
-        self.phi = HoM( muon_dist , muon_dist_approx)
-        pass
-
-    def __determinate_angle(self, theta , phi):
-        self.theta = theta
-        self.phi = phi
-
-    def ang_coord(self, *args, **kwargs):
-        if self._angle_mode:
-            return self.__determinate_angle(*args, **kwargs)
-        return self.__angle_generation(*args, **kwargs)
 
 
 
@@ -155,6 +33,12 @@ def projection( m , z):
     x1 = m.x + dx
     y1 = m.y + dy
     return x1 , y1
+
+def find_points( m:Muone , S:Scintillatore):
+    x1,y1 = projection( m , S.z1)
+    x2,y2 = projection( m , S.z2)
+    return (x1,y1,S.z1) , (x2,y2,S.z2)    
+
 
 def intersection( m: Muone , S: Scintillatore):
 
@@ -194,8 +78,52 @@ def intersection( m: Muone , S: Scintillatore):
             bool_y = True
 
     return (bool_x & bool_y)
+    
+def inverse_line( y , m , a):
+    return (y - a)/m   
 
-def energy_evaluation( m: Muone , Giunone: Scintillatore,  Minerva: Scintillatore, materiale: Materiale)
+def is_inside( point:tuple[float,float,float] , x_range , y_range, z_range):
+    range_list = [x_range , y_range , z_range]
+    return all([range_list[i][0] < point[i] < range_list[i][1] for i in range(3)])
+
+def edge_finding( muone:Muone , S: Scintillatore):
+    
+    starting_point, ending_point = find_points(muone , S)
+    
+    x_range = ( S.x1 , S.x2)
+    y_range = ( S.y1 , S.y2)
+    z_range = (S.z1 , S.z2)
+
+    m = ( np.diff(x_range)/np.diff(z_range) , np.diff(y_range)/ np.diff(z_range))
+    a = (x_range[0] - m[0]*z_range[0] , y_range[0] - m[1]*z_range[0])
+
+    z_x = lambda x: inverse_line( x , m[0] , a[0])
+    z_y = lambda y: inverse_line( y , m[1], a[1])
+
+    y_x = lambda x: m[1]*z_x(x) + a[1]
+    x_y = lambda y: m[0]* z_y(y) + a[0]
+    
+    x_edges = [ [x , y_x(x) , z_x(x)] for x in x_range]
+    y_edges = [ [x_y(y), y , z_y(y)] for y in y_range]
+    z_edges = [ [l[0] , l[1] , l[2]] for l in [starting_point , ending_point]]
+
+    list_possible_vertex = np.concatenate(( x_edges , y_edges , z_edges ))
+
+    valid_vertex = []
+
+    for vertex in list_possible_vertex:
+        if is_inside( vertex , x_range, y_range, z_range):
+            valid_vertex.append(vertex)
+
+    if len(valid_vertex) != 2: raise ValueError("Non funziona :-( , len= "+str(len(valid_vertex)))
+    return valid_vertex[0] , valid_vertex[1]
+
+
+
+
+
+
+
 
 def sim(
     top_pos: tuple[float, float, float],
@@ -208,12 +136,7 @@ def sim(
 ) -> tuple[int, int, int]:
     # Set thickness: 1 for thin, 3 for thick
     thicknesses: list[int] = [4,4,4]
-    if thin_position == 0:
-        thicknesses[0] = 2
-    elif thin_position == 1:
-        thicknesses[1] = 2
-    elif thin_position == 2:
-        thicknesses[2] = 2
+    thicknesses[thin_position] = 2
 
     bot_scintillator: Scintillatore = Scintillatore(80, thicknesses[0], 30, bot_name)
     middle_scintillator: Scintillatore = Scintillatore(80, thicknesses[1], 30, middle_name)
@@ -243,7 +166,7 @@ def sim(
             doppie += 1
         if (flag_M & flag_T & flag_B):
             triple += 1
-            energy_evaluation( m , top_scintillator , middle_scintillator)
+
 
         perc: int = int(np.round(doppie / N * 20))
 
