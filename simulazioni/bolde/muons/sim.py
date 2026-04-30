@@ -84,18 +84,20 @@ def inverse_line( y , m , a):
 
 def is_inside( point:tuple[float,float,float] , x_range , y_range, z_range):
     range_list = [x_range , y_range , z_range]
-    return all([range_list[i][0] < point[i] < range_list[i][1] for i in range(3)])
+    return all([range_list[i][0] <= point[i] <= range_list[i][1] for i in range(3)])
 
 def edge_finding( muone:Muone , S: Scintillatore):
     
     starting_point, ending_point = find_points(muone , S)
+
+    delta = np.array(starting_point) - np.array(ending_point)
     
     x_range = ( S.x1 , S.x2)
     y_range = ( S.y1 , S.y2)
     z_range = (S.z1 , S.z2)
 
-    m = ( np.diff(x_range)/np.diff(z_range) , np.diff(y_range)/ np.diff(z_range))
-    a = (x_range[0] - m[0]*z_range[0] , y_range[0] - m[1]*z_range[0])
+    m = (delta[0]/delta[2] , delta[1]/delta[2])
+    a = (starting_point[0] - m[0]*starting_point[2] , starting_point[1] - m[1]*starting_point[2])
 
     z_x = lambda x: inverse_line( x , m[0] , a[0])
     z_y = lambda y: inverse_line( y , m[1], a[1])
