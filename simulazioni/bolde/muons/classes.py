@@ -25,6 +25,7 @@ class Materiale:
         self.PDG = PDG_file
         self.density = density
         self.__setup_radiation_lenght()
+        pass
 
     def __import_file( self):
         df = pd.read_csv(
@@ -57,19 +58,22 @@ class Materiale:
         self.T = self.df["T"].to_numpy() # kinetic energy
         self.sp = self.density * self.df["dE/dx"].to_numpy() # stopping power
         self.radiation_lenght = np.array([ trapezoid(1/self.sp[:i] , self.T[:i]) for i in range(1 , len(self.sp))])
+        self.radiation_lenght = np.insert( self.radiation_lenght , 0 , 0)
 
     
     def __create_point( self, x: np.ndarray , y: np.ndarray , x0: float):
         if x0 in x:
             # check if point is already inside the array
             y0 = y[x == x0]
+            return y0
         else:
             # interpolate linearly to evaluate the point
             i2 = np.where( (x - x0) > 0, x , np.inf).argmin()
             i1 = i2-1
+
             m = (y[i1] - y[i2])/(x[i1] - x[i2])
             a = y[i1] - m*x[i1]
-        return m*x0 + a
+            return m*x0 + a
 
     def energy_calculation( self , in_point, out_point , energy):
         distance = np.sum( [(in_point[i] - out_point[i])**2 for i in range(3)])
@@ -90,9 +94,11 @@ class Scintillatore(Materiale):
         self.height = height
         self.depth = depth
         self.name = name
-        if not type(PDG) == str or np.isnan(density):# type: ignore 
-            super().__init__( PDG , density)
+        # Call parent initializer only when PDG (file path) and density are provided
+        if isinstance(PDG, str) and (density is not None):
+            super().__init__(PDG, density)
         pass
+            
 
     def position( self , x , y , z):
         self.x1 = x - self.lenght/2
@@ -101,6 +107,7 @@ class Scintillatore(Materiale):
         self.y2 = y + self.depth/2
         self.z1 = z - self.height/2
         self.z2 = z + self.height/2
+        
 
 
     
@@ -120,14 +127,15 @@ class Muone:
         self.z = z + self.shift_z
 
         # optionally set initial spatial coordinates
-        if not np.isnan([Lx , Ly, z]).any():# type: ignore 
+        if Lx is not None or Ly is not None or z is not None:
             # call the public method which dispatches to the selected mode
             self.sp_coord(Lx, Ly, z)
 
         # optionally set initial angles
-        if not np.isnan([Lx , Ly, z]).any():# type: ignore 
+        if theta is not None or phi is not None:
             # call the public method which dispatches to the selected mode
             self.ang_coord(theta, phi)
+        pass
 
 
     def __random_position(self):
@@ -140,7 +148,7 @@ class Muone:
         self.z = z
 
     def sp_coord(self, x = None , y = None , z = None):
-        if self._position_mode or not np.isnan([x , y, z]).any(): # type: ignore 
+        if self._position_mode or (x is not None or y is not None or z is not None): 
             return self.__determinate_position(x , y, z)
         return self.__random_position()
     
@@ -161,7 +169,7 @@ class Muone:
         self.phi = phi
 
     def ang_coord(self, theta = None, phi= None):
-        if self._angle_mode or not np.isnan([theta , phi]).any(): # type: ignore 
+        if self._angle_mode or (theta is not None or phi is not None):
             return self.__determinate_angle(theta , phi)
         return self.__angle_generation()
 
