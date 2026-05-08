@@ -72,7 +72,7 @@ while triple < N:
 
     E = 1
 
-    if (flag_M & flag_T & flag_B):
+    if (flag_M & flag_T):
         # v1 , v2 = edge_finding(m , Al)
         # E= Al.energy_calculation(v1 , v2 , E)
         # v1 , v2 = edge_finding(m , middle_scintillator)
