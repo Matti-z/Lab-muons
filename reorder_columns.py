@@ -1,18 +1,24 @@
-import pandas as pd
+#!/usr/bin/env python3
+"""Generate a CSV with two columns:
+- first: integers from 0 to 15
+- label: integers from 0 to 6
 
-# edit these
-INPUT = "Data/V_settings3.csv"
-OUTPUT = "Data/V_settings3_ordered.csv"
-DESIRED_ORDER = ["p_tensione[V]", "g_tensione[V]", "p_threshold[mV]" , "g_threshold[mV]", "p_count", "g_count", "pg_doppie", "tempo[min]"]  # put columns in the order you want
+This writes all combinations (16 x 7 = 112 rows) to reorder_columns.csv in the
+same directory.
+"""
+import csv
+from itertools import product
+from pathlib import Path
+import numpy as np
 
-df = pd.read_csv(INPUT)
+OUT = Path(__file__).with_name("unif.csv")
 
-# keep only columns that exist, then append any remaining columns if you want them after
-cols_in_order = [c for c in DESIRED_ORDER if c in df.columns]
-remaining = [c for c in df.columns if c not in cols_in_order]
+def main():
+    with OUT.open("w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["first"] + list(np.round(30/6*np.array(range(1, 7)) -  , 2)))
+        for first in range(1, 16):
+            writer.writerow([np.round(80/15*first - 2.5 , 2)] + [0] * 7)
 
-# choose final columns: only desired (remove remaining) or desired + remaining
-final_cols = cols_in_order + remaining  # or just cols_in_order
-
-df.to_csv(OUTPUT, columns=final_cols, index=False)
-print(f"Wrote {OUTPUT} with columns: {final_cols}")
+if __name__ == "__main__":
+    main()
