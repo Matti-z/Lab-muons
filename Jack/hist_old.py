@@ -88,7 +88,7 @@ n_bins = 100
 
 if __name__ == "__main__":
 
-    df = pd.read_csv('old.csv')
+    df = pd.read_csv('Jack/old.csv')
     old=[]
     for i in df.values:
         old.append(i[0])
@@ -97,6 +97,7 @@ if __name__ == "__main__":
     old=old[old>4e-7]
 
     old_cut=old[(old<1e-6) | (old>2.2e-6)]
+    print(len(old_cut) , len(old))
 
     count_1, edges_1 =  np.histogram(old_cut, bins=n_bins)
     
