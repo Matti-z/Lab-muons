@@ -99,13 +99,13 @@ n_bins = 70
 
 if __name__ == "__main__":
 
-    df = pd.read_csv('old.csv')
+    df = pd.read_csv('Jack/old.csv')
     old=[]
     for i in df.values:
         old.append(i[0])
     old=np.array(old)
 
-    timestamp = np.loadtxt('timestamps_M.txt')
+    timestamp = np.loadtxt('Jack/timestamps_M.txt')
     timestamp = np.array(timestamp)
 
     timestamp=timestamp[timestamp>3e-7]
