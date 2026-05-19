@@ -8,3 +8,4 @@ plotly
 pathlib
 nbformat
 uproot
+tqdm
