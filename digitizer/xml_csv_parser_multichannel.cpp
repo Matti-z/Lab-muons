@@ -190,7 +190,7 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& timestamps 
 void timestamp_to_csv(std::ofstream &out, std::vector<double> &timestamps , std::vector<bool> &divider)
 {
     for( int i = 0 ; i < timestamps.size(); i++){
-        out << timestamps[i] << " , " << divider[i] << "\n";
+        out << timestamps[i] << "," << divider[i] << "\n";
     }
 }
 
