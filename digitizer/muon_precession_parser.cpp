@@ -9,6 +9,7 @@
 #include "libraries/xml_parser.hpp"
 #include "libraries/progress_bar.hpp"
 
+// TODO bicchiere di petrolio
 
 #define DELTA 400
 #define ELECTRON_CHECK_LIMIT_INDEX 40
@@ -61,14 +62,13 @@ void check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vec
 void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &timestamps)
 {
 
-    // THE STRUCTURE OF THE CODE ADMITS 
     bool isTriggered = false;
     bool topSignal = false; 
     bool hasLowTriggered = false;
     
     std::vector<short> muon = trace_vector[0];
-    std::vector<short> low_scint = trace_vector[1];
-    std::vector<short> high_scint = trace_vector[2];
+    std::vector<short> low_scint = trace_vector[2];
+    std::vector<short> high_scint = trace_vector[3];
 
     
     int electronCheckIndex = traceStartingIndex;
@@ -79,13 +79,14 @@ void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<sho
     int traceStart = muon.size();
     int startingLenght = timestamps.size();
 
-    // if an impulse in the muon signal is detected -> move till it's finished
+
     //! Avoid electron count
-    for (; electronCheckIndex >=0 ; electronCheckIndex--){
-        if (muon[electronCheckIndex] > baselineMuon - DELTA && low_scint[electronCheckIndex] > baselineLowScint - DELTA && high_scint[electronCheckIndex] > baselineHighScint - DELTA){
-            break;
-        }
-    }
+    // if an electron impulse in the muon signal is detected -> move till it's finished
+    // for (; electronCheckIndex >=0 ; electronCheckIndex--){
+    //     if (muon[electronCheckIndex] > baselineMuon - DELTA && low_scint[electronCheckIndex] > baselineLowScint - DELTA && high_scint[electronCheckIndex] > baselineHighScint - DELTA){
+    //         break;
+    //     }
+    // }
     
     afterElectronIndex = electronCheckIndex;
 
@@ -123,9 +124,12 @@ void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<sho
 
 void timestamp_calculator(int last_trace_index, double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &timestamps , std::vector<bool> &dataset_discriminator)
 {
-    std::vector<short> low_scint = trace_vector[1];
-    std::vector<short> high_scint = trace_vector[2];
-
+    /*
+    * this function analyses wether an electron has been detected in the top or bottom scintillator 
+    * if the electron is spotted in both traces, the trace is studied twice
+    */
+    std::vector<short> low_scint = trace_vector[2];
+    std::vector<short> high_scint = trace_vector[3];
     int baselineHighScint = high_scint[0];
     int baselineLowScint = low_scint[0];
 
@@ -134,7 +138,6 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
         if(high_scint[g_index] < baselineHighScint - DELTA){ // if the electron is spotted
             muon_check(g_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(true);
-            return;
         }
     }
     // loop over a short range in which the electron should fall into
@@ -142,7 +145,6 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
         if(low_scint[p_index] < baselineLowScint - DELTA){ // if the electron is spotted
             muon_check(p_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(false);
-            return;
         }
     }
 

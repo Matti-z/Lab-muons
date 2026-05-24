@@ -13,7 +13,7 @@
 // make
 // #define LINE_LIMIT 100000
 #define DELTA 400
-#define DOUBLE_CHECK_LIMIT_INDEX 40
+#define ELECTRON_CHECK_LIMIT_INDEX 40
 #define PULSE_WIDTH 12  
 
 
@@ -60,7 +60,7 @@ void check_multitrace(std::istringstream &iss,  bool &save, std::vector<std::vec
     }
 }
 
-void triple_check(int traceStartingIndex ,double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &timestamps)
+void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<short>> &trace_vector, std::vector<double> &timestamps)
 {
     bool isTriggered = false;
     bool giunone_signal = false; 
@@ -128,17 +128,17 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
     int baselinePartenope = partenope[0];
 
     // loop over a short range in which the electron should fall into
-    for( int g_index = last_trace_index ; g_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; g_index--){
+    for( int g_index = last_trace_index ; g_index > last_trace_index - ELECTRON_CHECK_LIMIT_INDEX ; g_index--){
         if(giunone[g_index] < baselineGiunone - DELTA){ // if the electron is spotted
-            triple_check(g_index , freq, trace_vector, timestamps);
+            muon_check(g_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(true);
             return;
         }
     }
     // loop over a short range in which the electron should fall into
-    for( int p_index = last_trace_index ; p_index > last_trace_index - DOUBLE_CHECK_LIMIT_INDEX ; p_index--){
+    for( int p_index = last_trace_index ; p_index > last_trace_index - ELECTRON_CHECK_LIMIT_INDEX ; p_index--){
         if(partenope[p_index] < baselinePartenope - DELTA){ // if the electron is spotted
-            triple_check(p_index , freq, trace_vector, timestamps);
+            muon_check(p_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(false);
             return;
         }
