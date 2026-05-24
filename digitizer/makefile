@@ -10,7 +10,7 @@ TARGET = $(OUTPUT_DIR)/multichannel_parser
 
 
 
-LIBRARIES = $(LIB_DIR)/progress_bar.cpp $(LIB_DIR)/xml_parser.cpp
+LIBRARIES = $(LIB_DIR)/*.cpp
 OBJECTS = $(SOURCES: .cpp=.o) $(LIBRARIES: .cpp=.o)
 
 # result file needs all object files
