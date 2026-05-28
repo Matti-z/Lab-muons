@@ -3,6 +3,7 @@
 #include "PhysicsList.hh"
 
 #include "G4EmStandardPhysics.hh"
+#include "G4DecayPhysics.hh"
 #include "G4LossTableManager.hh"
 
 #include "G4ProcessManager.hh"
@@ -16,6 +17,7 @@ PhysicsList::PhysicsList():  G4VUserPhysicsList()
   defaultCutValue = 10.0*um;
   SetVerboseLevel(1);
   emPhysicsList = new G4EmStandardPhysics();
+  decayPhysicsList = new G4DecayPhysics();
 }
 
 PhysicsList::~PhysicsList()
@@ -34,6 +36,7 @@ void PhysicsList::ConstructParticle()
 
   // define gamma, e+, e- and some charged Hadrons
   emPhysicsList->ConstructParticle();
+  decayPhysicsList->ConstructParticle(); //permetto il decay
 
   
 // gamma
@@ -57,6 +60,7 @@ void PhysicsList::ConstructProcess()
 {
   AddTransportation();
   emPhysicsList->ConstructProcess();
+  decayPhysicsList->ConstructProcess(); //processo di decadimento
 }
 
 void PhysicsList::SetCuts()
