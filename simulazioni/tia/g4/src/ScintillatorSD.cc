@@ -18,13 +18,15 @@ ScintillatorSensitiveDetector::~ScintillatorSensitiveDetector() {}
 // Called automatically at the start of every event
 void ScintillatorSensitiveDetector::Initialize(G4HCofThisEvent* HCE)
 {
-  // Create a new hits collection for this event
   fHitsCollection = new ScintillatorHitCollection(SensitiveDetectorName, collectionName[0]);
   
-  // Register the collection into Geant4's event management system
-  G4int hcID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
-  HCE->AddHitsCollection(hcID, fHitsCollection);
+  // Let the SD manager handle the collection ID properly
+  HCE->AddHitsCollection(
+    G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection),
+    fHitsCollection
+  );
 }
+
 
 // Called automatically every time a particle takes a step inside the volume
 G4bool ScintillatorSensitiveDetector::ProcessHits(G4Step *step, G4TouchableHistory *)

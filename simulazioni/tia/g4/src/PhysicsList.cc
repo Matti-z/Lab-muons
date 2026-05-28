@@ -4,6 +4,7 @@
 
 #include "G4EmStandardPhysics.hh"
 #include "G4DecayPhysics.hh"
+// #include "G4MuonDecayChannel.hh" forse è utile?
 #include "G4LossTableManager.hh"
 
 #include "G4ProcessManager.hh"
@@ -18,6 +19,7 @@ PhysicsList::PhysicsList():  G4VUserPhysicsList()
   SetVerboseLevel(1);
   emPhysicsList = new G4EmStandardPhysics();
   decayPhysicsList = new G4DecayPhysics();
+
 }
 
 PhysicsList::~PhysicsList()

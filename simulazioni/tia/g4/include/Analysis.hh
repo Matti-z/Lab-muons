@@ -134,6 +134,9 @@ private:
 	G4int thisRunNumHits;
 	
 	std::ofstream csvFile;  // Added file stream declaration
+private:
+    bool csvFileValid = false;  // Track if file opened successfully
+
 };
 
 #endif

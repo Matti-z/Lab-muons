@@ -46,11 +46,11 @@ void DetectorConstruction::ComputeParameters(){
     //now i define the default geometry
 
     //wrld
-    halfWrldLength = 5* m;
+    halfWrldLength = 2* m;
 
     //scintillators
     posFirstScintillator = G4ThreeVector(0., 0., 0.);
-    posSecondScintillator = G4ThreeVector(0., 0., (8.4+(3/2))* cm);
+    posSecondScintillator = G4ThreeVector(0., 0., (8.4+(3/2))* cm); //non so se il box è costruito a partire dalle coordinate del suo centro di massa o meno
     posThirdScintillator = G4ThreeVector(0., 0., (12.8+(3/2))* cm);
     // scint1_2_thick = 3 * cm;
     // scint1_2_length = 80 * cm;
@@ -82,7 +82,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
         0 );//copynumber
 
     //ora costruisco il rivelatore davvero
-    ConstructScintillator();
+    ConstructScintillator(); // necessario qui!!
 
     //per il momento non costruisco la lastra
     // ConstructLastra();
@@ -159,7 +159,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
         "Minerva", 
         logicWrld,
         false, 
-        3,
+        2,
         false);
 
     G4Color yellow(1, 1, 0);
@@ -173,17 +173,17 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
     // Create SD instances
     ScintillatorSensitiveDetector* scintSD1 = 
         new ScintillatorSensitiveDetector("ScintSD_PandG");
-    ScintillatorSensitiveDetector* scintSD3 = 
+    ScintillatorSensitiveDetector* scintSD2 = 
         new ScintillatorSensitiveDetector("ScintSD_Minerva");
     
     // Register with SDManager
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     sdManager->AddNewDetector(scintSD1);
-    sdManager->AddNewDetector(scintSD3);
+    sdManager->AddNewDetector(scintSD2);
     
     // Attach to logical volumes
     logicScintPandG->SetSensitiveDetector(scintSD1);
-    logicScintM->SetSensitiveDetector(scintSD3);
+    logicScintM->SetSensitiveDetector(scintSD2);
     
     // ================================================
     
