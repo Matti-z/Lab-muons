@@ -4,6 +4,7 @@
 
 #include "G4VUserPhysicsList.hh"
 #include "globals.hh"
+#include "G4DecayPhysics.hh"
 
 
 class G4VPhysicsConstructor;
@@ -29,6 +30,7 @@ protected:
 private:
  
   G4VPhysicsConstructor*  emPhysicsList;
+  G4VPhysicsConstructor* decayPhysicsList;
  
 };
 
