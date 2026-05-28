@@ -23,7 +23,38 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   gun = InitializeGPS();
   
 }
-//forse la seguente è sbagliata, forse anche la generazione su phi segue cos^2/3
+//forse la seguente è sbagliata, forse anche la generazione su phi segue cos^2/3, la aggiungo sotto
+// void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+// {
+// G4double theta;
+//     G4double phi;
+
+//     // Rejection sampling
+//     while(true)
+//     {
+//         theta = acos(G4UniformRand());
+
+//         G4double y = G4UniformRand();
+
+//         if(y < pow(cos(theta), 2.0/3.0))
+//             break;
+//     }
+
+//     phi = 2*pi*G4UniformRand();
+
+//     // Convert spherical -> Cartesian
+//     G4double dx = sin(theta)*cos(phi);
+//     G4double dy = sin(theta)*sin(phi);
+//     G4double dz = -cos(theta);
+
+//     gun->GetCurrentSource()
+//        ->GetAngDist()
+//        ->SetParticleMomentumDirection(
+//             G4ThreeVector(dx,dy,dz));
+
+//     gun->GeneratePrimaryVertex(anEvent);
+// }
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
 G4double theta;
@@ -40,7 +71,15 @@ G4double theta;
             break;
     }
 
-    phi = 2*pi*G4UniformRand();
+    while(true)
+    {
+        phi = acos(G4UniformRand());
+
+        G4double y = G4UniformRand();
+
+        if(y < pow(cos(phi), 2.0/3.0))
+            break;
+    }
 
     // Convert spherical -> Cartesian
     G4double dx = sin(theta)*cos(phi);
@@ -71,7 +110,7 @@ G4GeneralParticleSource* PrimaryGeneratorAction::InitializeGPS()
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* muonPlus = particleTable->FindParticle("mu+");  
   G4ParticleDefinition* muonMinus = particleTable->FindParticle("mu-");  
-  gps->GetCurrentSource()->SetParticleDefinition(muonMinus);
+  gps->GetCurrentSource()->SetParticleDefinition(muonMinus); //aggiungo il mu+ alle particelle generate
 
   // set energy distribution
   G4SPSEneDistribution *eneDist = gps->GetCurrentSource()->GetEneDist() ;
@@ -84,7 +123,7 @@ G4GeneralParticleSource* PrimaryGeneratorAction::InitializeGPS()
   // set position distribution
   G4SPSPosDistribution *posDist = gps->GetCurrentSource()->GetPosDist();
   posDist->SetPosDisType("Plane");  // or Point,Plane,Volume,Beam
-  posDist->SetCentreCoords(G4ThreeVector(0, 0, 20*cm));  // Center of plane
+  posDist->SetCentreCoords(G4ThreeVector(0, 0, 18*cm));  // Center of plane
   posDist->SetHalfX(40*cm);   // Half-width in X direction
   posDist->SetHalfY(10*cm);   // Half-width in Y direction
   posDist->SetPosDisShape("Rectangle");  // or "Circle", "Ellipse"
