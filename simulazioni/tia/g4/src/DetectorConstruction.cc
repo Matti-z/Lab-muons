@@ -13,10 +13,13 @@
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 
-//#include "SensitiveDetector.hh"
+
 #include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+
+//ora voglio sensitive detector
+#include "ScintillatorSD.hh"
 
 DetectorConstruction::DetectorConstruction(){
     DefineMaterials(); //definition of mat
@@ -164,6 +167,26 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
     G4Color red(1, 0, 0);
     logicScintM->SetVisAttributes(new G4VisAttributes(red));
         //----------------------------------------------------
+    //faccio diventare "sensitive" il mio detector
+    //===============================================================
+    
+    // Create SD instances
+    ScintillatorSensitiveDetector* scintSD1 = 
+        new ScintillatorSensitiveDetector("ScintSD_PandG");
+    ScintillatorSensitiveDetector* scintSD3 = 
+        new ScintillatorSensitiveDetector("ScintSD_Minerva");
+    
+    // Register with SDManager
+    G4SDManager* sdManager = G4SDManager::GetSDMpointer();
+    sdManager->AddNewDetector(scintSD1);
+    sdManager->AddNewDetector(scintSD3);
+    
+    // Attach to logical volumes
+    logicScintPandG->SetSensitiveDetector(scintSD1);
+    logicScintM->SetSensitiveDetector(scintSD3);
+    
+    // ================================================
+    
     return physiFirstScintillator;
 }
 

@@ -23,7 +23,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   gun = InitializeGPS();
   
 }
-
+//forse la seguente è sbagliata, forse anche la generazione su phi segue cos^2/3
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
 G4double theta;
@@ -88,6 +88,7 @@ G4GeneralParticleSource* PrimaryGeneratorAction::InitializeGPS()
   posDist->SetHalfX(40*cm);   // Half-width in X direction
   posDist->SetHalfY(10*cm);   // Half-width in Y direction
   posDist->SetPosDisShape("Rectangle");  // or "Circle", "Ellipse"
+  //forse per questioni geometriche sarebbe meglio fare "circle", ci proverò
 //   posDist->SetCentreCoords(G4ThreeVector(0.0*cm,0.0*cm,-80.0*cm));
 //   posDist->SetBeamSigmaInX(0.1*mm);
 //   posDist->SetBeamSigmaInY(0.1*mm);
