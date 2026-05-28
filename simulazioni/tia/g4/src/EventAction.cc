@@ -23,7 +23,7 @@ void EventAction::BeginOfEventAction(const G4Event* event)
 }
 
 void EventAction::EndOfEventAction(const G4Event* event)
-{
+{//le prossime tre righe non ho idea di cosa siano
     G4SDManager* sdMngr = G4SDManager::GetSDMpointer();
     G4HCofThisEvent* HCE = event->GetHCofThisEvent();
     if(!HCE) return;
