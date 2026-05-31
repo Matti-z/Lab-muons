@@ -50,8 +50,10 @@ void Analysis::PrepareNewRun(const G4Run* aRun)
 // 	thisRunNumHits = 0;
 // }
 
-void Analysis::AddEDepScintillator(G4double edep, G4double time, G4int particleID, G4int trackID, G4int copyNo) 
-{ //i don't know what these functions do
+void Analysis::AddEDepScintillator(G4double edep, G4double time, G4int particleID, G4int trackID, G4int copyNo)
+{ 
+    G4cout << "HIT RECORDED: edep=" << edep << " time=" << time << " layer=" << copyNo << G4endl;
+    
     thisEventData.totalEnergy += edep;
     thisEventData.hitEnergies.push_back(edep);//what does push_back do?
     /*push_back() adds an element to the end of a vector. In your code, when you call thisEventData.hitEnergies.push_back(edep), 
@@ -88,6 +90,57 @@ EndOfRun()	Prints summary statistics and closes the file when all events are don
 
 
 //il seguente discrimina il decay
+// void Analysis::EndOfEvent(const G4Event* event)
+// {
+//     thisRunTotalEnergy += thisEventData.totalEnergy;
+//     thisRunNumHits += thisEventData.numHits;
+
+//     if (thisEventData.numHits == 0) return;
+
+//     int hitTop = 0;
+//     int hitBottom = 0;
+//     int hitMiddle = 0;
+//     std::vector<G4double> middleTimes;
+
+//     // 1. Sort through all the hits in this specific event
+//     for (size_t i = 0; i < thisEventData.numHits; ++i) {
+//         G4int layer = thisEventData.scintillatorIDs[i];
+//         if (layer == 0) hitTop = 1;
+//         if (layer == 2) hitBottom = 1;
+//         if (layer == 1) {
+//             hitMiddle = 1;
+//             middleTimes.push_back(thisEventData.hitTimes[i]);
+//         }
+//     }
+
+//     // 2. Look for the delayed decay electron in the middle scintillator
+//     G4double decayTime = -1.0; 
+    
+//     if (middleTimes.size() >= 2) {
+//         // Geant4 tracks time in nanoseconds by default.
+//         // We sort the hit times to find the first hit (muon) and last hit (electron)
+//         std::sort(middleTimes.begin(), middleTimes.end());
+//         G4double firstTime = middleTimes.front();
+//         G4double lastTime = middleTimes.back();
+        
+//         // If the gap is greater than 50 ns, it's a decay, not just a single particle stepping
+//         if ((lastTime - firstTime) > 50.0) {
+//             decayTime = lastTime - firstTime;
+//         }
+//     }
+
+//     // 3. Write to CSV
+//     csvFile << event->GetEventID() << ","
+//             << hitTop << ","
+//             << hitMiddle << ","
+//             << hitBottom << ","
+//             << decayTime << "\n";
+// }
+
+//in un secondo momento vorrei anche salvare tutti i muoni che interagiscono con almeno uno dei tre piani 
+//per controllare le questioni di angolo solido in caso di scintillatori non allineati
+//ci provo
+
 void Analysis::EndOfEvent(const G4Event* event)
 {
     thisRunTotalEnergy += thisEventData.totalEnergy;
@@ -111,33 +164,40 @@ void Analysis::EndOfEvent(const G4Event* event)
         }
     }
 
-    // 2. Look for the delayed decay electron in the middle scintillator
+    // 2. Determine coincidence type
+    int coincidenceCount = hitTop + hitMiddle + hitBottom;
+    G4String coincidenceType = "SINGLE";
+    if (coincidenceCount == 3) {
+        coincidenceType = "TRIPLE";
+    } else if (coincidenceCount == 2) {
+        coincidenceType = "DOUBLE";
+    }
+
+    // 3. Look for the delayed decay electron in the middle scintillator
     G4double decayTime = -1.0; 
+    G4String decaySignature = "NO";
     
     if (middleTimes.size() >= 2) {
-        // Geant4 tracks time in nanoseconds by default.
-        // We sort the hit times to find the first hit (muon) and last hit (electron)
         std::sort(middleTimes.begin(), middleTimes.end());
         G4double firstTime = middleTimes.front();
         G4double lastTime = middleTimes.back();
         
-        // If the gap is greater than 50 ns, it's a decay, not just a single particle stepping
         if ((lastTime - firstTime) > 50.0) {
             decayTime = lastTime - firstTime;
+            decaySignature = "YES";
         }
     }
 
-    // 3. Write to CSV
+    // 4. Write to CSV
     csvFile << event->GetEventID() << ","
+            << coincidenceType << ","
             << hitTop << ","
             << hitMiddle << ","
             << hitBottom << ","
+            << decaySignature << ","
             << decayTime << "\n";
+            // csvfile.flush();
 }
-
-//in un secondo momento vorrei anche salvare tutti i muoni che interagiscono con almeno uno dei tre piani 
-//per controllare le questioni di angolo solido in caso di scintillatori non allineati
-//ci provo
 
 
 

@@ -11,12 +11,13 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::BuildForMaster() const
 {
-  SetUserAction(new RunAction());
+  SetUserAction(new RunAction(nullptr));  // Master doesn't need EventAction
 }
 
 void ActionInitialization::Build() const
 {
+  auto eventAction = new EventAction();
   SetUserAction(new PrimaryGeneratorAction());
-  SetUserAction(new EventAction());
-  SetUserAction(new RunAction());
+  SetUserAction(eventAction);
+  SetUserAction(new RunAction(eventAction));  // <-- PASS EventAction to RunAction
 }

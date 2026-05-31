@@ -172,9 +172,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
     
     // Create SD instances
     ScintillatorSensitiveDetector* scintSD1 = 
-        new ScintillatorSensitiveDetector("ScintSD_PandG");
+        new ScintillatorSensitiveDetector("PandG");
     ScintillatorSensitiveDetector* scintSD2 = 
-        new ScintillatorSensitiveDetector("ScintSD_Minerva");
+        new ScintillatorSensitiveDetector("Minerva");
     
     // Register with SDManager
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();

@@ -29,10 +29,16 @@ void EventAction::EndOfEventAction(const G4Event* event)
     if(!HCE) return;
 
     // Find collections by name from the SD manager
-    G4int id1 = sdMngr->GetCollectionID("ScintSD_PandG/ScintillatorHitCollection");
-    G4int id3 = sdMngr->GetCollectionID("ScintSD_Minerva/ScintillatorHitCollection");
+    G4int id1 = G4SDManager::GetSDMpointer()->GetCollectionID("PandG/ScintillatorHitCollection");
+    G4int id3 = G4SDManager::GetSDMpointer()->GetCollectionID("Minerva/ScintillatorHitCollection");
 
     auto analysis = Analysis::GetInstance();
+
+    auto hitCollection = static_cast<ScintillatorHitCollection*>(HCE->GetHC(id1));
+
+    if(hitCollection) {
+    G4cout << "Number of hits: " << hitCollection->entries() << G4endl;
+    }
 
     // Lambda function to parse hit data out of the current event frame
     auto parseCollection = [&](G4int hcID) {
@@ -46,9 +52,11 @@ void EventAction::EndOfEventAction(const G4Event* event)
         }
     };
 
+
     parseCollection(id1);
     parseCollection(id3);
 
     // Finalize metrics calculation for this event
     analysis->EndOfEvent(event);
 }
+

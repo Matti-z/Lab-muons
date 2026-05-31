@@ -31,6 +31,7 @@ void ScintillatorSensitiveDetector::Initialize(G4HCofThisEvent* HCE)
 // Called automatically every time a particle takes a step inside the volume
 G4bool ScintillatorSensitiveDetector::ProcessHits(G4Step *step, G4TouchableHistory *)
 {
+  // G4cout << ">>> ProcessHits called in " << GetName() << G4endl; debug comme, works
   G4double edep = step->GetTotalEnergyDeposit();
   if (edep == 0.0) return false; // Ignore steps with no energy deposition
   
