@@ -18,6 +18,7 @@ ScintillatorSensitiveDetector::~ScintillatorSensitiveDetector() {}
 // Called automatically at the start of every event
 void ScintillatorSensitiveDetector::Initialize(G4HCofThisEvent* HCE)
 {
+  G4cout << ">>> Initialize called for SD: " << GetName() << G4endl;
   fHitsCollection = new ScintillatorHitCollection(SensitiveDetectorName, collectionName[0]);
   
   // Let the SD manager handle the collection ID properly
@@ -25,6 +26,9 @@ void ScintillatorSensitiveDetector::Initialize(G4HCofThisEvent* HCE)
     G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection),
     fHitsCollection
   );
+  G4int collID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
+  G4cout << ">>> Collection created: " << SensitiveDetectorName << "/" << collectionName[0] 
+         << " with ID: " << collID << G4endl;
 }
 
 

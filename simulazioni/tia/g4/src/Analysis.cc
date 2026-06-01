@@ -1,6 +1,8 @@
 
 #include "Analysis.hh"
 #include "G4UnitsTable.hh"
+#include "G4Event.hh"
+#include "EventAction.hh"
 #include <algorithm> //std::sort
 
 Analysis* Analysis::singleton = nullptr;
@@ -24,6 +26,7 @@ void Analysis::PrepareNewEvent(const G4Event* ) // anEvent
 	thisEventData.scintillatorIDs.clear(); 
 }
 //il seguente crea un file di output in teoria, però non lo salva, non so perchè (forse non ho mai avuto un decay?)
+//la sequenza non arriva fino a qui
 void Analysis::PrepareNewRun(const G4Run* aRun)
 {
     thisRunTotalEnergy = 0.0;
