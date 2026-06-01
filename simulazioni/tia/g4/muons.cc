@@ -16,8 +16,9 @@
 #include "PrimaryGeneratorAction.hh"
 #include "PhysicsList.hh"
 #include "QGSP_BERT.hh"
-//#include "EventAction.hh"
-//#include "RunAction.hh"
+#include "EventAction.hh"
+#include "RunAction.hh"
+#include "ActionInitialization.hh"
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -45,15 +46,17 @@ int main(int argc,char** argv)
   G4VUserPrimaryGeneratorAction* gen_action = new PrimaryGeneratorAction();
   runManager->SetUserAction(gen_action);
 
+  runManager->SetUserInitialization(new ActionInitialization());
+
 
   //Optional User Action classes
   //Event action (handles for beginning / end of event)
   //EventAction* event_action = new EventAction();
   //Run action (handles for beginning / end of event)
   //This particular class needs a pointer to the event action
-  //RunAction* run_action = new RunAction(event_action);
-  //runManager->SetUserAction( event_action );
-  //runManager->SetUserAction( run_action );
+  // RunAction* run_action = new RunAction(event_action);
+  // runManager->SetUserAction( event_action );
+  // runManager->SetUserAction( run_action );
 
   // Initialize G4 kernel
   runManager->Initialize();

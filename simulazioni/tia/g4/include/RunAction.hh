@@ -11,7 +11,7 @@ class Analysis;
 class RunAction : public G4UserRunAction
 {
 public:
-  RunAction();
+  // RunAction();
   RunAction(EventAction* theEventAction);
   virtual ~RunAction();
 
