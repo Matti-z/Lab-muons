@@ -71,15 +71,7 @@ G4double theta;
             break;
     }
 
-    while(true)
-    {
-        phi = acos(G4UniformRand());
-
-        G4double y = G4UniformRand();
-
-        if(y < pow(cos(phi), 2.0/3.0))
-            break;
-    }
+    phi = 2*pi*G4UniformRand();
 
     // Convert spherical -> Cartesian
     G4double dx = sin(theta)*cos(phi);

@@ -73,7 +73,7 @@ void EventAction::BeginOfEventAction(const G4Event* event)
 
 void EventAction::EndOfEventAction(const G4Event* event)
 {
-    G4cout << "\n>>> EndOfEventAction called for event " << event->GetEventID() << G4endl;
+    // G4cout << "\n>>> EndOfEventAction called for event " << event->GetEventID() << G4endl;
     
     G4SDManager* sdMngr = G4SDManager::GetSDMpointer();
     G4HCofThisEvent* HCE = event->GetHCofThisEvent();
@@ -88,8 +88,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4int id1 = G4SDManager::GetSDMpointer()->GetCollectionID("PandG/ScintillatorHitCollection");
     G4int id3 = G4SDManager::GetSDMpointer()->GetCollectionID("Minerva/ScintillatorHitCollection");
 
-    G4cout << "Collection ID for PandG: " << id1 << G4endl;
-    G4cout << "Collection ID for Minerva: " << id3 << G4endl;
+    // G4cout << "Collection ID for PandG: " << id1 << G4endl;
+    // G4cout << "Collection ID for Minerva: " << id3 << G4endl;
 
     auto analysis = Analysis::GetInstance();
 
