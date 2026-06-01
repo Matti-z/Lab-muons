@@ -1,0 +1,9 @@
+# Batch mode macro for muon simulation (no visualization)
+# Use with: ./exmuons batch.mac
+#
+# Minimal verbosity for batch processing
+/control/verbose 1
+/run/verbose 1
+#
+# Run the simulation with N events
+/run/beamOn 10000

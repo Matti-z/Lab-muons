@@ -32,7 +32,7 @@ void Analysis::PrepareNewRun(const G4Run* aRun)
     thisRunTotalEnergy = 0.0;
     thisRunNumHits = 0;
 
-    G4String filename = "run_" + std::to_string(aRun->GetRunID()) + ".csv";
+    G4String filename = "../results/run_" + std::to_string(aRun->GetRunID()) + ".csv";
     csvFile.open(filename);
     csvFileValid = csvFile.is_open();
     if (!csvFileValid) {
@@ -178,7 +178,7 @@ void Analysis::EndOfEvent(const G4Event* event)
 
     // 3. Look for the delayed decay electron in the middle scintillator
     G4double decayTime = -1.0; 
-    G4String decaySignature = "NO";
+    G4String decaySignature = "False";
     
     if (middleTimes.size() >= 2) {
         std::sort(middleTimes.begin(), middleTimes.end());
@@ -187,7 +187,7 @@ void Analysis::EndOfEvent(const G4Event* event)
         
         if ((lastTime - firstTime) > 50.0) {
             decayTime = lastTime - firstTime;
-            decaySignature = "YES";
+            decaySignature = "True";
         }
     }
 
