@@ -61,8 +61,8 @@ void DetectorConstruction::ComputeParameters(){
 
     //scintillators
     posFirstScintillator = G4ThreeVector(0., scint1_YOffset, 0.);
-    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (8.4+(3/2))* cm); 
-    posThirdScintillator = G4ThreeVector(0., scint3_YOffset, (12.8+(3/2))* cm);
+    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (12.8+(3/2))* cm); 
+    posThirdScintillator = G4ThreeVector(0., scint3_YOffset, (8.4+(3/2))* cm);
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct(){
