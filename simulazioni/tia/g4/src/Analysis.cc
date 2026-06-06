@@ -31,8 +31,8 @@ void Analysis::PrepareNewRun(const G4Run* aRun)
 {
     thisRunTotalEnergy = 0.0;
     thisRunNumHits = 0;
-
-    G4String filename = "../results/run_" + std::to_string(aRun->GetRunID()) + ".csv";
+ //specificare dove salvare i dati
+    G4String filename = "../results/gmp/2/run_" + std::to_string(aRun->GetRunID()) + ".csv";
     csvFile.open(filename);
     csvFileValid = csvFile.is_open();
     if (!csvFileValid) {
