@@ -3,6 +3,7 @@
 
 #include "G4VUserDetectorConstruction.hh"
 #include "G4ThreeVector.hh"
+#include "DetectorMessenger.hh"
 
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
@@ -28,6 +29,15 @@ class DetectorConstruction : public G4VUserDetectorConstruction{
     G4ThreeVector SetSecondScintillatorPosition(const G4ThreeVector & pos) { return posSecondScintillator=pos; }
     G4ThreeVector SetThirdScintillatorPosition(const G4ThreeVector & pos) { return posThirdScintillator=pos; }
     
+    // Setter methods for scintillator Y-offsets
+    void SetScintillator1_YOffset(G4double offset) { scint1_YOffset = offset; }
+    void SetScintillator2_YOffset(G4double offset) { scint2_YOffset = offset; }
+    void SetScintillator3_YOffset(G4double offset) { scint3_YOffset = offset; }
+
+    // Getter methods
+    G4double GetScintillator1_YOffset() const { return scint1_YOffset; }
+    G4double GetScintillator2_YOffset() const { return scint2_YOffset; }
+    G4double GetScintillator3_YOffset() const { return scint3_YOffset; }
 
     private:
     void DefineMaterials(); //the needed materials
@@ -69,5 +79,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction{
     G4double sizey_scint_m;
     G4double sizex_scint_m;
     G4ThreeVector posLastra;
+    private:
+    DetectorMessenger* detectorMessenger;
+
+    // Scintillator Y-offset parameters
+    G4double scint1_YOffset;
+    G4double scint2_YOffset;
+    G4double scint3_YOffset;
 };
 #endif
