@@ -1,0 +1,25 @@
+# Batch mode macro for 4 muon simulation runs with scintillator displacement
+# Use with: ./exmuons batch_4runs.mac
+
+/control/verbose 1
+/run/verbose 1
+
+# Run 1: Scintillator 1 at baseline (no offset)
+/detector/scint1YOffset 0 cm
+/run/reinitializeGeometry
+/run/beamOn 10000
+
+# Run 2: Scintillator 1 displaced by 15 cm along Y
+/detector/scint1YOffset 15 cm
+/run/reinitializeGeometry
+/run/beamOn 10000
+
+# Run 3: Scintillator 1 displaced by 30 cm along Y
+/detector/scint1YOffset 30 cm
+/run/reinitializeGeometry
+/run/beamOn 10000
+
+# Run 4: Scintillator 1 displaced by 45 cm along Y
+/detector/scint1YOffset 45 cm
+/run/reinitializeGeometry
+/run/beamOn 10000

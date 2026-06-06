@@ -1,4 +1,5 @@
 #include "DetectorConstruction.hh"
+#include "DetectorMessenger.hh"
 #include "G4Material.hh"
 #include "G4Box.hh"
 // #include "G4Tubs.hh"
@@ -21,14 +22,24 @@
 //ora voglio sensitive detector
 #include "ScintillatorSD.hh"
 
-DetectorConstruction::DetectorConstruction(){
+DetectorConstruction::DetectorConstruction()
+   : scint1_YOffset(0.0),
+    scint2_YOffset(0.0),
+    scint3_YOffset(0.0),
+    detectorMessenger(nullptr)
+{
     DefineMaterials(); //definition of mat
 // -----------------------------------------
     ComputeParameters(); //compute par
 
+    // Create the detector messenger
+  detectorMessenger = new DetectorMessenger(this);
+
 }
 
-DetectorConstruction::~DetectorConstruction(){}
+DetectorConstruction::~DetectorConstruction(){
+    delete detectorMessenger;
+}
 
 void DetectorConstruction::DefineMaterials(){
     //get mat from Nist
@@ -49,12 +60,9 @@ void DetectorConstruction::ComputeParameters(){
     halfWrldLength = 2* m;
 
     //scintillators
-    posFirstScintillator = G4ThreeVector(0., 0., 0.);
-    posSecondScintillator = G4ThreeVector(0., 0., (8.4+(3/2))* cm); //non so se il box è costruito a partire dalle coordinate del suo centro di massa o meno
-    posThirdScintillator = G4ThreeVector(0., 0., (12.8+(3/2))* cm);
-    // scint1_2_thick = 3 * cm;
-    // scint1_2_length = 80 * cm;
-    // scint1_2_lar = 30 * cm;
+    posFirstScintillator = G4ThreeVector(0., scint1_YOffset, 0.);
+    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (8.4+(3/2))* cm); 
+    posThirdScintillator = G4ThreeVector(0., scint3_YOffset, (12.8+(3/2))* cm);
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct(){
@@ -62,7 +70,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
 
     //World
-    G4GeometryManager::GetInstance()->SetWorldMaximumExtent(2.*halfWrldLength);
+    // G4GeometryManager::GetInstance()->SetWorldMaximumExtent(2.*halfWrldLength);
     G4cout << "Computed tolerance = "
     << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/cm
     << "cm" << G4endl;
