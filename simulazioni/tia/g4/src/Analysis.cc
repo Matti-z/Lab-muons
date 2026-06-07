@@ -31,8 +31,8 @@ void Analysis::PrepareNewRun(const G4Run* aRun)
 {
     thisRunTotalEnergy = 0.0;
     thisRunNumHits = 0;
-
-    G4String filename = "../results/run_" + std::to_string(aRun->GetRunID()) + ".csv";
+ //specificare dove salvare i dati
+    G4String filename = "../results/gmp/2/run_" + std::to_string(aRun->GetRunID()) + ".csv";
     csvFile.open(filename);
     csvFileValid = csvFile.is_open();
     if (!csvFileValid) {
@@ -41,7 +41,7 @@ void Analysis::PrepareNewRun(const G4Run* aRun)
 
     
     // Create clear columns for our logical signature
-    csvFile << "EventID,HitTop,HitMiddle,HitBottom,DecayTime_ns\n";
+    csvFile << "EventID,Coincidence,HitTop,HitMiddle,HitBottom,Decay,DecayTime_ns\n";
 }
 
 
@@ -75,70 +75,7 @@ void Analysis::AddEDepScintillator(G4double edep, G4double time, G4int particleI
     thisEventData.lastHitTime = time;
 }
 
-/*AddEDepScintillator()	Records a single detector hit with its energy, timing, and which layer (copyNo) was hit
-PrepareNewEvent()	Clears all hit data before processing a fresh event so old data doesn't contaminate the new event
-EndOfEvent()	Analyzes all the hits collected during one event to look for decay signatures and writes results to CSV
-PrepareNewRun()	Initializes the CSV output file at the start of a simulation run
-EndOfRun()	Prints summary statistics and closes the file when all events are done*/
 
-
-//il seguente non discrimina il decay
-// void Analysis::EndOfEvent(const G4Event* /*event*/)
-// {
-//     // Accumulate event metrics into run summary storage
-//     thisRunTotalEnergy += thisEventData.totalEnergy;
-//     thisRunNumHits += thisEventData.numHits;
-// }
-
-
-
-//il seguente discrimina il decay
-// void Analysis::EndOfEvent(const G4Event* event)
-// {
-//     thisRunTotalEnergy += thisEventData.totalEnergy;
-//     thisRunNumHits += thisEventData.numHits;
-
-//     if (thisEventData.numHits == 0) return;
-
-//     int hitTop = 0;
-//     int hitBottom = 0;
-//     int hitMiddle = 0;
-//     std::vector<G4double> middleTimes;
-
-//     // 1. Sort through all the hits in this specific event
-//     for (size_t i = 0; i < thisEventData.numHits; ++i) {
-//         G4int layer = thisEventData.scintillatorIDs[i];
-//         if (layer == 0) hitTop = 1;
-//         if (layer == 2) hitBottom = 1;
-//         if (layer == 1) {
-//             hitMiddle = 1;
-//             middleTimes.push_back(thisEventData.hitTimes[i]);
-//         }
-//     }
-
-//     // 2. Look for the delayed decay electron in the middle scintillator
-//     G4double decayTime = -1.0; 
-    
-//     if (middleTimes.size() >= 2) {
-//         // Geant4 tracks time in nanoseconds by default.
-//         // We sort the hit times to find the first hit (muon) and last hit (electron)
-//         std::sort(middleTimes.begin(), middleTimes.end());
-//         G4double firstTime = middleTimes.front();
-//         G4double lastTime = middleTimes.back();
-        
-//         // If the gap is greater than 50 ns, it's a decay, not just a single particle stepping
-//         if ((lastTime - firstTime) > 50.0) {
-//             decayTime = lastTime - firstTime;
-//         }
-//     }
-
-//     // 3. Write to CSV
-//     csvFile << event->GetEventID() << ","
-//             << hitTop << ","
-//             << hitMiddle << ","
-//             << hitBottom << ","
-//             << decayTime << "\n";
-// }
 
 //in un secondo momento vorrei anche salvare tutti i muoni che interagiscono con almeno uno dei tre piani 
 //per controllare le questioni di angolo solido in caso di scintillatori non allineati
