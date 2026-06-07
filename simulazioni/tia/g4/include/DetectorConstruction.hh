@@ -67,6 +67,10 @@ class DetectorConstruction : public G4VUserDetectorConstruction{
     G4VPhysicalVolume* physiThirdScintillator;
     //eventualmente lastra
     G4VPhysicalVolume* physilastra;
+    //creo physical volumes for wraps
+    G4VPhysicalVolume* physipwrap;
+    G4VPhysicalVolume* physigwrap;
+    G4VPhysicalVolume* physimwrap;
 
 
     G4ThreeVector posFirstScintillator;
@@ -79,6 +83,14 @@ class DetectorConstruction : public G4VUserDetectorConstruction{
     G4double sizey_scint_m;
     G4double sizex_scint_m;
     G4ThreeVector posLastra;
+
+    //to implement with aluminium foil around scintillators
+    G4double sizex_al_foil;
+    G4double sizey_al_foil;
+    G4double sizez_al_foil;
+    G4double sizex_al_foil_m;
+    G4double sizey_al_foil_m;
+    G4double sizez_al_foil_m;
     private:
     DetectorMessenger* detectorMessenger;
 
