@@ -107,15 +107,15 @@ G4GeneralParticleSource* PrimaryGeneratorAction::InitializeGPS()
   // set energy distribution
   G4SPSEneDistribution *eneDist = gps->GetCurrentSource()->GetEneDist() ;
   eneDist->SetEnergyDisType("Gauss");
-  eneDist->SetMonoEnergy(1.0*GeV);        // Mean energy (center of curve)
-  eneDist->SetBeamSigmaInE(0.2*GeV);           // Standard deviation (width)
+  eneDist->SetMonoEnergy(1.5*MeV);        // Mean energy (center of curve)
+  eneDist->SetBeamSigmaInE(0.5*MeV);           // Standard deviation (width)
 
 //   eneDist->SetMonoEnergy(*GeV);
 
   // set position distribution
   G4SPSPosDistribution *posDist = gps->GetCurrentSource()->GetPosDist();
   posDist->SetPosDisType("Plane");  // or Point,Plane,Volume,Beam
-  posDist->SetCentreCoords(G4ThreeVector(0, 0, 18*cm));  // Center of plane
+  posDist->SetCentreCoords(G4ThreeVector(0, 0, 15*cm));  // Center of plane
   posDist->SetHalfX(40*cm);   // Half-width in X direction
   posDist->SetHalfY(10*cm);   // Half-width in Y direction
   posDist->SetPosDisShape("Rectangle");  // or "Circle", "Ellipse"
