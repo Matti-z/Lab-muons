@@ -8,6 +8,8 @@
 
 #include "globals.hh"
 #include "G4UImessenger.hh"
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 
 class DetectorConstruction;
 class G4UIdirectory;
@@ -31,10 +33,11 @@ class DetectorMessenger: public G4UImessenger
 {
 public:
   //! Constructor
-  DetectorMessenger(DetectorConstruction* );
+  DetectorMessenger(DetectorConstruction* det);
   //! Destructor
   ~DetectorMessenger();
     
+    virtual void SetNewValue(G4UIcommand* command, G4String newValue);
   //! handle user commands
   //forse fovrei usare il seguente
 //     void SetNewValue(G4UIcommand*, G4String);
@@ -44,12 +47,13 @@ private:
   DetectorConstruction*      detector;
     
   G4UIdirectory*             detDir;
+
+    G4UIcmdWithADoubleAndUnit* scint1YOffsetCmd;
+    G4UIcmdWithADoubleAndUnit* scint2YOffsetCmd;
+    G4UIcmdWithADoubleAndUnit* scint3YOffsetCmd;
 //       G4UIdirectory*             secondSensorDir;
 //             
-//       G4UIcmdWithADoubleAndUnit* xShiftCmd;    
-//       G4UIcmdWithADoubleAndUnit* yShiftCmd;    
-//       G4UIcmdWithADoubleAndUnit* thetaCmd;    
-//     
+
 //       G4UIcmdWithoutParameter*   updateCmd;    
 //     
 //       G4UIcmdWithABool*			 setDUTsetupCmd;

@@ -1,4 +1,5 @@
 #include "DetectorConstruction.hh"
+#include "DetectorMessenger.hh"
 #include "G4Material.hh"
 #include "G4Box.hh"
 // #include "G4Tubs.hh"
@@ -13,6 +14,7 @@
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 
+// #include "G4ThreeVector.hh"
 
 #include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
@@ -21,14 +23,27 @@
 //ora voglio sensitive detector
 #include "ScintillatorSD.hh"
 
-DetectorConstruction::DetectorConstruction(){
+//per fare operazioni logiche con solidi
+#include "G4SubtractionSolid.hh"
+
+DetectorConstruction::DetectorConstruction()
+   : scint1_YOffset(0.0),
+    scint2_YOffset(0.0),
+    scint3_YOffset(0.0),
+    detectorMessenger(nullptr)
+{
     DefineMaterials(); //definition of mat
 // -----------------------------------------
     ComputeParameters(); //compute par
 
+    // Create the detector messenger
+  detectorMessenger = new DetectorMessenger(this);
+
 }
 
-DetectorConstruction::~DetectorConstruction(){}
+DetectorConstruction::~DetectorConstruction(){
+    delete detectorMessenger;
+}
 
 void DetectorConstruction::DefineMaterials(){
     //get mat from Nist
@@ -39,7 +54,7 @@ void DetectorConstruction::DefineMaterials(){
     pvt = man->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
     air = man->FindOrBuildMaterial("G4_AIR");
     al = man->FindOrBuildMaterial("G4_Al");
-
+ 
 }
 
 void DetectorConstruction::ComputeParameters(){
@@ -49,12 +64,9 @@ void DetectorConstruction::ComputeParameters(){
     halfWrldLength = 2* m;
 
     //scintillators
-    posFirstScintillator = G4ThreeVector(0., 0., 0.);
-    posSecondScintillator = G4ThreeVector(0., 0., (8.4+(3/2))* cm); //non so se il box è costruito a partire dalle coordinate del suo centro di massa o meno
-    posThirdScintillator = G4ThreeVector(0., 0., (12.8+(3/2))* cm);
-    // scint1_2_thick = 3 * cm;
-    // scint1_2_length = 80 * cm;
-    // scint1_2_lar = 30 * cm;
+    posFirstScintillator = G4ThreeVector(0., scint1_YOffset, 0.);
+    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (12.8+(3/2))* cm); 
+    posThirdScintillator = G4ThreeVector(0., scint3_YOffset, (8.4+(3/2))* cm);
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct(){
@@ -62,7 +74,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
 
     //World
-    G4GeometryManager::GetInstance()->SetWorldMaximumExtent(2.*halfWrldLength);
+    // G4GeometryManager::GetInstance()->SetWorldMaximumExtent(2.*halfWrldLength);
     G4cout << "Computed tolerance = "
     << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/cm
     << "cm" << G4endl;
@@ -109,12 +121,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 //ora devo costruire rivelatore
 
 G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
-    sizex_scint = 80* cm;
-    sizey_scint = 30* cm;
-    sizez_scint = 3 * cm;
-    sizex_scint_m = 80 * cm;
-    sizey_scint_m = 30* cm;
-    sizez_scint_m = 2 * cm;
+    sizex_scint = (80 - 0.4)* cm;
+    sizey_scint = (30 - 0.4)* cm;
+    sizez_scint = (3 - 0.4) * cm;
+    sizex_scint_m = (80 - 0.4) * cm;
+    sizey_scint_m = (30 - 0.4)* cm;
+    sizez_scint_m = (2 - 0.4) * cm;
+    sizex_al_foil = 80* cm;
+    sizey_al_foil = 30* cm;
+    sizez_al_foil = 3 * cm;
+    sizex_al_foil_m = 80* cm;
+    sizey_al_foil_m = 30 * cm;
+    sizez_al_foil_m = 2 * cm;
     G4double halfScintSizeX = sizex_scint/2.;
 	G4double halfScintSizeY = sizey_scint/2.;
 	G4double halfScintSizeZ = sizez_scint/2.;
@@ -122,6 +140,28 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
 	G4double halfScintSizeY_m = sizey_scint_m/2.;
 	G4double halfScintSizeZ_m = sizez_scint_m/2.;
     
+    //creo una box cava di alluminio in cui successivamente inserire scint
+    G4Box* outer_pg = new G4Box("Pwrap", sizex_al_foil/2, sizey_al_foil/2, sizez_al_foil/2);
+    G4Box* inner_pg = new G4Box("inner_box",( sizex_al_foil/2 - 0.15*cm),  (sizey_al_foil/2 - 0.15 *cm),
+     (sizez_al_foil/2 - 0.15*cm));  
+    G4SubtractionSolid* hollow_pg = new G4SubtractionSolid("hollow_pg",
+                                                        outer_pg,
+                                                        inner_pg,
+                                                        0,  // no rotation
+                                                        G4ThreeVector(0, 0, 0));  // centered
+    G4LogicalVolume* logicpandgwrap = new G4LogicalVolume(
+        hollow_pg, al, "PandG_wrap"
+    );
+
+    physipwrap = new G4PVPlacement(nullptr,                    // No rotation
+            posFirstScintillator,                   // Position
+            logicpandgwrap,          // Logical volume to place
+            "P_wrap",                // Name
+            logicWrld,                  // Mother volume
+            false,                      // Not multiple copies
+            0,
+            false);    
+
     G4Box* solidScintPandG = new G4Box( "Partenope", halfScintSizeX, halfScintSizeY, halfScintSizeZ);
 
     G4LogicalVolume* logicScintPandG = new G4LogicalVolume(
@@ -129,24 +169,56 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
         pvt, //itz material
         "PandG"); //name
 
-        physiFirstScintillator = new G4PVPlacement(nullptr,                    // No rotation
-              posFirstScintillator,                   // Position
-              logicScintPandG,          // Logical volume to place
-              "Partenope",                // Name
-              logicWrld,                  // Mother volume
-              false,                      // Not multiple copies
-              0,
-              false);                         // Copy number
+    physiFirstScintillator = new G4PVPlacement(nullptr,                    // No rotation
+            G4ThreeVector(0*cm, 0*cm, 0*cm),                   // Position
+            logicScintPandG,          // Logical volume to place
+            "Partenope",                // Name
+            logicpandgwrap,                  // Mother volume
+            false,                      // Not multiple copies
+            0,
+            false);                         // Copy number
+
+    physigwrap = new G4PVPlacement(nullptr,                    // No rotation
+        posSecondScintillator,                   // Position
+        logicpandgwrap,          // Logical volume to place
+        "P_wrap",                // Name
+        logicWrld,                  // Mother volume
+         false,                      // Not multiple copies
+        0,
+        false);    
 
     physiSecondScintillator = new G4PVPlacement(
         nullptr, 
-        posSecondScintillator,
+        G4ThreeVector(0*cm, 0*cm, 0*cm),
         logicScintPandG,
         "Giunone",
-        logicWrld,
+        logicpandgwrap,
         false,
         1, 
         false);
+
+    //creo wrap per minerva
+    G4Box* outer_m = new G4Box("mwrap", sizex_al_foil_m/2, sizey_al_foil_m/2, sizez_al_foil_m/2);
+    G4Box* inner_m = new G4Box("inner_box_m",( sizex_al_foil_m/2 - 0.15*cm),  (sizey_al_foil_m/2 - 0.15 *cm),
+     (sizez_al_foil_m/2 - 0.15*cm));
+    G4SubtractionSolid* hollow_m = new G4SubtractionSolid("hollow_m",
+                                                        outer_m,
+                                                        inner_m,
+                                                        0,  // no rotation
+                                                        G4ThreeVector(0, 0, 0));  // centered
+    G4LogicalVolume* logicmwrap = new G4LogicalVolume(
+        hollow_m, al, "m_wrap"
+    );
+    physimwrap = new G4PVPlacement(nullptr,                    // No rotation
+            posThirdScintillator,                   // Position
+            logicmwrap,          // Logical volume to place
+            "M_wrap",                // Name
+            logicWrld,                  // Mother volume
+            false,                      // Not multiple copies
+            0,
+            false);    
+
+
 
     G4Box* solidScintM = new G4Box ("Minerva", halfScintSizeX_m, halfScintSizeY_m, halfScintSizeZ_m);
     G4LogicalVolume* logicScintM = new G4LogicalVolume(
@@ -154,10 +226,10 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
 
     physiThirdScintillator = new G4PVPlacement(
         0, 
-        posThirdScintillator,
+        G4ThreeVector(0*cm, 0*cm, 0*cm),
         logicScintM,
         "Minerva", 
-        logicWrld,
+        logicmwrap,
         false, 
         2,
         false);
@@ -166,6 +238,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
     logicScintPandG->SetVisAttributes(new G4VisAttributes(yellow));
     G4Color red(1, 0, 0);
     logicScintM->SetVisAttributes(new G4VisAttributes(red));
+    G4Color white = G4Color::White();
+    logicmwrap->SetVisAttributes(new G4VisAttributes(white));
+    logicpandgwrap->SetVisAttributes(new G4VisAttributes(white));
         //----------------------------------------------------
     //faccio diventare "sensitive" il mio detector
     //===============================================================
