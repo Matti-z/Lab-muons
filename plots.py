@@ -30,10 +30,12 @@ class plots:
             prob = 0
         return sp_func.rvs(loc, scale , int(prob*len(self.dataset)))
     
-    def __single_exp_colour_incremental_plot__(self , bin_count , density = False):
+    def __single_exp_colour_incremental_plot__(self , bin_count , density = False , labels = []):
         if len(self.fig.get_children())<1:
             self.fig.clear()
             self.setup_figure()
+        if len(labels < 2):
+            raise ValueError("two labels are needed")
 
         data_exp1 = self.__generate_dataset__( 0 , self.interp.values["tau1"] , expon , self.interp.values["freq_exp1"])
         data_unif = self.__generate_dataset__( *self.range , uniform , 1-self.interp.values["freq_exp1"])
@@ -71,11 +73,11 @@ class plots:
 
         a = np.random.poisson(total_count)
 
-        self.ax.hist(self.dataset , bins = bin_count , range = self.range , density = density, color="black" , histtype="step", linestyle="--")
+        self.ax.hist(self.dataset , bins = bin_count , range = self.range , density = density, color="black" , histtype="step", linestyle="__")
         self.ax.hist(data_exp1 , bins = bin_count , range = self.range , density = density, color="orange" , alpha = 0.2)
         self.ax.hist( data_unif, bins = bin_count , range = self.range , density = density, color="green" , alpha = 0.5)
         self.ax.errorbar( bin_centers , total_count , np.sqrt(total_count) , 12e-9 , fmt = "o" , markersize=3 , color = "black")
-        self.ax.errorbar( bin_centers , exp_count , np.sqrt(exp_count) , 12e-9 , fmt = "o" , markersize=3 , color = "black")
+        self.ax.errorbar( bin_centers , exp_count , np.sqrt(exp_count) , 12e-9 , fmt = "o" , markersize=3 , color = "darkorange")
         self.ax.errorbar( bin_centers , unif_count , np.sqrt(unif_count) , 12e-9 , fmt = "o" , markersize=3 , color = "darkgreen")
     
     def __single_exp_bar_incremental_plot__(self , bin_count , density = False):
@@ -164,13 +166,13 @@ class plots:
         exp2_count , _ = np.histogram(data_exp2 , bins = bin_edges , range = self.range , density=density)
         unif_count , _ = np.histogram(data_unif , bins = bin_edges , range = self.range , density=density)
 
-        self.ax.hist(self.dataset , bins = bin_count , range = self.range , density = density, color="black" , histtype="step", linestyle="--")
+        self.ax.hist(self.dataset , bins = bin_count , range = self.range , density = density, color="black" , histtype="step", linestyle="__")
         self.ax.hist(data_exp1 , bins = bin_count , range = self.range , density = density, color="orange" , alpha = 0.2)
         self.ax.hist(data_exp2 , bins = bin_count , range = self.range , density = density, color="violet" , alpha = 0.4)
         self.ax.hist( data_unif, bins = bin_count , range = self.range , density = density, color="green" , alpha = 0.5)
         self.ax.errorbar( bin_centers , total_count , np.sqrt(total_count) , 12e-9 , fmt = "o" , markersize=3 , color = "black")
         self.ax.errorbar( bin_centers , exp1_count , np.sqrt(exp1_count) , 12e-9 , fmt = "o" , markersize=3 , color = "darkorange")
-        self.ax.errorbar( bin_centers , exp2_count , np.sqrt(exp2_count) , 12e-9 , fmt = "o" , markersize=3 , color = "black")
+        self.ax.errorbar( bin_centers , exp2_count , np.sqrt(exp2_count) , 12e-9 , fmt = "o" , markersize=3 , color = "darkviolet")
         self.ax.errorbar( bin_centers , unif_count , np.sqrt(unif_count) , 12e-9 , fmt = "o" , markersize=3 , color = "darkgreen")
 
     def __double_exp_bar_incremental_plot__(self , bin_count , density = False):
@@ -223,11 +225,11 @@ class plots:
         self.ax.errorbar( bin_centers , exp2_count , np.sqrt(exp2_count) , 12e-9 , markersize=3, fmt = "o" , color = "darkviolet")
         self.ax.errorbar( bin_centers , unif_count , np.sqrt(unif_count) , 12e-9 , markersize=3, fmt = "o" , color = "darkgreen")
 
-    def colour_plot_incremental(self , bin_count, density):
+    def colour_plot_incremental(self , bin_count, density , labels):
         if self.exp_n == 1:
-            self.__single_exp_colour_incremental_plot__(bin_count, density)
+            self.__single_exp_colour_incremental_plot__(bin_count, density , labels)
         if self.exp_n == 2:
-            self.__double_exp_colour_incremental_plot__(bin_count, density)
+            self.__double_exp_colour_incremental_plot__(bin_count, density , labels)
         return self.fig
 
     def colour_plot(self , bin_count, density):

@@ -94,31 +94,21 @@ def dataset_analysis(dataset: np.ndarray , creator: Callable, bins: SupportsInde
         If args is missing a key required by the model function.
     """
 
-    model_function = function_generator_with_variable_N( creator , len(dataset))
+    model_function = function_generator_with_variable_N(creator, len(dataset))
     sig_params = inspect.signature(model_function).parameters
     if "min" in sig_params and "max" in sig_params:
-        model_function = function_generator_with_min_max( model_function , dataset)
-    count, edges = np.histogram( dataset , bins=bins) 
+        model_function = function_generator_with_min_max(model_function, dataset)
+
+    count, edges = np.histogram(dataset, bins=bins)
     cost = ExtendedBinnedNLL(count, edges, model_function)
 
-    # Snippet to fix a different order between the function definition and args
-    sig = str(inspect.signature(model_function))
-    sig_list = sig.removeprefix("(").removesuffix(")").split(", ")
-    keys = list(args.keys())
+    param_names = [name for name in inspect.signature(model_function).parameters if name != "x"]
+    missing = [name for name in param_names if name not in args]
+    if missing:
+        raise KeyError(f"args is missing keys: {missing}")
 
-
-    
-    if( not all([k in sig_list for k in keys])):
-        print( sig_list)
-        print(keys) 
-        raise KeyError("args is missing a key")
-    sig_list.remove("x")
-    sorted_args = {k: args[k] for k in sig_list}
-
-
-    minuit_element =  Minuit(cost, *sorted_args.values())
-    
-    if "A" in sorted_args.keys():
+    minuit_element = Minuit(cost, **{name: args[name] for name in param_names})
+    if "A" in param_names:
         minuit_element.fixed["A"] = True
 
     return minuit_element
@@ -154,32 +144,21 @@ def dataset_analysis_unbinned(dataset: np.ndarray , creator: Callable, args: dic
         If args is missing a key required by the model function.
     """
 
-    model_function = function_generator_with_variable_N( creator , len(dataset))
+    model_function = function_generator_with_variable_N(creator, len(dataset))
 
     sig_params = inspect.signature(model_function).parameters
     if "min" in sig_params and "max" in sig_params:
-        model_function = function_generator_with_min_max( model_function , dataset)
+        model_function = function_generator_with_min_max(model_function, dataset)
 
-    cost = ExtendedUnbinnedNLL(dataset , model_function)
+    cost = ExtendedUnbinnedNLL(dataset, model_function)
 
-    # Snippet to fix a different order between the function definition and args
-    sig = str(inspect.signature(model_function))
-    sig_list = sig.removeprefix("(").removesuffix(")").split(", ")
-    keys = list(args.keys())
+    param_names = [name for name in inspect.signature(model_function).parameters if name != "x"]
+    missing = [name for name in param_names if name not in args]
+    if missing:
+        raise KeyError(f"args is missing keys: {missing}")
 
-
-    
-    if( not all([k in sig_list for k in keys])):
-        print( sig_list)
-        print(keys) 
-        raise KeyError("args is missing a key")
-    sig_list.remove("x")
-    sorted_args = {k: args[k] for k in sig_list}
-
-
-    minuit_element =  Minuit(cost, *sorted_args.values())
-    
-    if "A" in sorted_args.keys():
+    minuit_element = Minuit(cost, **{name: args[name] for name in param_names})
+    if "A" in param_names:
         minuit_element.fixed["A"] = True
 
     return minuit_element
