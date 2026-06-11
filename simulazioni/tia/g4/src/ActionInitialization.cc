@@ -4,6 +4,7 @@
 #include "PrimaryGeneratorAction.hh"
 #include "EventAction.hh"
 #include "RunAction.hh"
+#include "SteppingAction.hh"
 // #include "SteppingAction.hh"
 
 ActionInitialization::ActionInitialization() : G4VUserActionInitialization()
@@ -29,4 +30,6 @@ void ActionInitialization::Build() const
   SetUserAction(eventAction);                     // Set EventAction FIRST
   SetUserAction(new RunAction(eventAction));      // Then RunAction
   SetUserAction(new PrimaryGeneratorAction());
+  // SteppingAction added to trace steps inside volumes
+  SetUserAction(new SteppingAction());
 }
