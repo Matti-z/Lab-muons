@@ -4,6 +4,7 @@
 #include "G4HCofThisEvent.hh"
 #include "G4SDManager.hh"
 #include "G4UnitsTable.hh"
+#include "Analysis.hh"
 
 G4ThreadLocal G4Allocator<ScintillatorHit>* ScintillatorHitAllocator = nullptr;
 
@@ -18,7 +19,7 @@ ScintillatorSensitiveDetector::~ScintillatorSensitiveDetector() {}
 // Called automatically at the start of every event
 void ScintillatorSensitiveDetector::Initialize(G4HCofThisEvent* HCE)
 {
-  G4cout << ">>> Initialize called for SD: " << GetName() << G4endl;
+  // G4cout << ">>> Initialize called for SD: " << GetName() << G4endl;
   fHitsCollection = new ScintillatorHitCollection(SensitiveDetectorName, collectionName[0]);
   
   // Let the SD manager handle the collection ID properly
@@ -27,16 +28,19 @@ void ScintillatorSensitiveDetector::Initialize(G4HCofThisEvent* HCE)
     fHitsCollection
   );
   G4int collID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
-  G4cout << ">>> Collection created: " << SensitiveDetectorName << "/" << collectionName[0] 
-         << " with ID: " << collID << G4endl;
+  // G4cout << ">>> Collection created: " << SensitiveDetectorName << "/" << collectionName[0] 
+  //        << " with ID: " << collID << G4endl;
 }
 
 
 // Called automatically every time a particle takes a step inside the volume
 G4bool ScintillatorSensitiveDetector::ProcessHits(G4Step *step, G4TouchableHistory *)
 {
-  // G4cout << ">>> ProcessHits called in " << GetName() << G4endl; debug comme, works
   G4double edep = step->GetTotalEnergyDeposit();
+  auto vol = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
+  // G4cout << ">>> ProcessHits called in " << GetName()
+  //        << " volume=" << (vol ? vol->GetName() : G4String("null"))
+  //        << " edep=" << G4BestUnit(edep, "Energy") << G4endl;
   if (edep == 0.0) return false; // Ignore steps with no energy deposition
   
   // Create a hit object
@@ -58,4 +62,23 @@ G4bool ScintillatorSensitiveDetector::ProcessHits(G4Step *step, G4TouchableHisto
   return true;
 }
 
-void ScintillatorSensitiveDetector::EndOfEvent(G4HCofThisEvent*) {}
+void ScintillatorSensitiveDetector::EndOfEvent(G4HCofThisEvent*) 
+{
+  G4int numHits = fHitsCollection->entries();
+  if (numHits == 0) return;
+
+  Analysis* analysis = Analysis::GetInstance(); // Or however your singleton access is named
+
+  for (G4int i = 0; i < numHits; i++) {
+    ScintillatorHit* hit = (*fHitsCollection)[i];
+    
+    // Pass the hit metrics directly to your analysis manager
+    analysis->AddEDepScintillator(
+      hit->edep, 
+      hit->time, 
+      hit->particleID, 
+      hit->trackID, 
+      hit->copyNo
+    );
+  }
+}

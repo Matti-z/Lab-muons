@@ -107,8 +107,8 @@ G4GeneralParticleSource* PrimaryGeneratorAction::InitializeGPS()
   // set energy distribution
   G4SPSEneDistribution *eneDist = gps->GetCurrentSource()->GetEneDist() ;
   eneDist->SetEnergyDisType("Gauss");
-  eneDist->SetMonoEnergy(1.5*MeV);        // Mean energy (center of curve)
-  eneDist->SetBeamSigmaInE(0.5*MeV);           // Standard deviation (width)
+  eneDist->SetMonoEnergy(1.5*GeV);        // Mean energy (center of curve)
+  eneDist->SetBeamSigmaInE(0.5*GeV);           // Standard deviation (width)
 
 //   eneDist->SetMonoEnergy(*GeV);
 
