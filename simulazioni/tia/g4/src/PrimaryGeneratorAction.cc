@@ -68,6 +68,8 @@ G4double theta;
         G4double y = G4UniformRand();
 
         if(y < pow(cos(theta), 2.0/3.0))
+        // if(y < pow(cos(theta), 2.0))
+        // if(y < pow(cos(theta), 1.0/3))
             break;
     }
 
@@ -119,7 +121,7 @@ G4GeneralParticleSource* PrimaryGeneratorAction::InitializeGPS()
   // posDist->SetHalfX(40*cm);   // Half-width in X direction
   // posDist->SetHalfY(10*cm);   // Half-width in Y direction
   posDist->SetPosDisShape("Circle");  // or "Circle", "Ellipse"
-  posDist->SetRadius(70*cm);
+  posDist->SetRadius(55*cm);
   //forse per questioni geometriche sarebbe meglio fare "circle", ci proverò
 //   posDist->SetCentreCoords(G4ThreeVector(0.0*cm,0.0*cm,-80.0*cm));
 //   posDist->SetBeamSigmaInX(0.1*mm);
