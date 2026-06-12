@@ -107,18 +107,19 @@ G4GeneralParticleSource* PrimaryGeneratorAction::InitializeGPS()
   // set energy distribution
   G4SPSEneDistribution *eneDist = gps->GetCurrentSource()->GetEneDist() ;
   eneDist->SetEnergyDisType("Gauss");
-  eneDist->SetMonoEnergy(1.5*GeV);        // Mean energy (center of curve)
-  eneDist->SetBeamSigmaInE(0.5*GeV);           // Standard deviation (width)
+  eneDist->SetMonoEnergy(0.4*GeV);        // Mean energy (center of curve)
+  eneDist->SetBeamSigmaInE(0.2*GeV);           // Standard deviation (width)
 
 //   eneDist->SetMonoEnergy(*GeV);
 
   // set position distribution
   G4SPSPosDistribution *posDist = gps->GetCurrentSource()->GetPosDist();
   posDist->SetPosDisType("Plane");  // or Point,Plane,Volume,Beam
-  posDist->SetCentreCoords(G4ThreeVector(0, 0, 15*cm));  // Center of plane
-  posDist->SetHalfX(40*cm);   // Half-width in X direction
-  posDist->SetHalfY(10*cm);   // Half-width in Y direction
-  posDist->SetPosDisShape("Rectangle");  // or "Circle", "Ellipse"
+  posDist->SetCentreCoords(G4ThreeVector(0, 0, 20*cm));  // Center of plane
+  // posDist->SetHalfX(40*cm);   // Half-width in X direction
+  // posDist->SetHalfY(10*cm);   // Half-width in Y direction
+  posDist->SetPosDisShape("Circle");  // or "Circle", "Ellipse"
+  posDist->SetRadius(70*cm);
   //forse per questioni geometriche sarebbe meglio fare "circle", ci proverò
 //   posDist->SetCentreCoords(G4ThreeVector(0.0*cm,0.0*cm,-80.0*cm));
 //   posDist->SetBeamSigmaInX(0.1*mm);
