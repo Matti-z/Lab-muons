@@ -1,68 +1,3 @@
-// #include "EventAction.hh"
-// #include "Analysis.hh"
-// #include "ScintillatorSD.hh"
-
-// #include "G4Event.hh"
-// #include "G4SDManager.hh"
-// #include "G4HCofThisEvent.hh"
-
-// EventAction::EventAction() : G4UserEventAction()
-// {
-// }
-
-// EventAction::~EventAction()
-// {
-// }
-
-// void EventAction::BeginOfEventAction(const G4Event* event)
-// {   
-//     // Automatically reset data lists for the new incoming event
-//     auto analysis = Analysis::GetInstance();
-//     analysis->PrepareNewEvent(event);
-// }
-
-// void EventAction::EndOfEventAction(const G4Event* event)
-// {
-//     G4SDManager* sdMngr = G4SDManager::GetSDMpointer();
-//     G4HCofThisEvent* HCE = event->GetHCofThisEvent();
-    
-//     if(!HCE) {
-//         G4cout << ">>> EndOfEventAction: HCE null" << G4endl;
-//         return;
-//     }
-
-//     G4cout << ">>> EndOfEventAction: number of collections=" << HCE->GetNumberOfCollections() << G4endl;
-    
-//     // Dynamically retrieve the collection IDs for all 3 layers
-//     G4int id1 = sdMngr->GetCollectionID("Partenope/ScintillatorHitCollection");
-//     G4int id2 = sdMngr->GetCollectionID("Giunone/ScintillatorHitCollection");
-//     G4int id3 = sdMngr->GetCollectionID("Minerva/ScintillatorHitCollection");
-
-//     G4cout << ">>> EndOfEventAction: ids=" << id1 << "," << id2 << "," << id3 << G4endl;
-
-//     auto analysis = Analysis::GetInstance();
-
-//     // Lambda function to parse hit data safely
-//     auto parseCollection = [&](G4int hcID) {
-//         if(hcID < 0) return; // Invalid ID fallback
-        
-//         auto hc = static_cast<ScintillatorHitCollection*>(HCE->GetHC(hcID));
-//         if(!hc) return; // Legitimate case: no hits occurred in this layer for this event
-
-//         for(size_t i = 0; i < hc->entries(); ++i) {
-//             auto hit = (*hc)[i];
-//             analysis->AddEDepScintillator(hit->edep, hit->time, hit->particleID, hit->trackID, hit->copyNo);
-//         }
-//     };
-
-//     // Parse all three layers into your analysis system
-//     parseCollection(id1); // Partenope (Copy 0 - Top)
-//     parseCollection(id2); // Giunone   (Copy 1 - Bottom)
-//     parseCollection(id3); // Minerva   (Copy 2 - Middle)
-
-//     // Finalize metrics calculation and write out to the CSV file
-//     analysis->EndOfEvent(event);
-// }
 #include "EventAction.hh"
 #include "Analysis.hh"
 #include "ScintillatorSD.hh"
@@ -113,16 +48,22 @@ void EventAction::EndOfEventAction(const G4Event* event)
         auto hc = static_cast<ScintillatorHitCollection*>(HCE->GetHC(hcID));
         if(!hc) return; // Legitimate case: no hits occurred in this layer for this event
 
-        for(size_t i = 0; i < hc->entries(); ++i) {
-            auto hit = (*hc)[i];
+       for(size_t i = 0; i < hc->entries(); ++i) {
+        auto hit = (*hc)[i];
+        // 🛑 NEW REFINED FILTER:
+            // Accept the primary muon (TrackID == 1) OR any muon/electron variant (PDG 11, -11, 13, -13)
+            G4int absPDG = std::abs(hit->particleID);
+            
+            if (hit->trackID == 1 || absPDG == 13 || absPDG == 11){
             analysis->AddEDepScintillator(hit->edep, hit->time, hit->particleID, hit->trackID, hit->copyNo);
         }
+    }
     };
 
     // Parse all three layers into your analysis system
-    parseCollection(id1); // Partenope (Copy 0 - Top)
-    parseCollection(id2); // Giunone   (Copy 1 - Bottom)
-    parseCollection(id3); // Minerva   (Copy 2 - Middle)
+    parseCollection(id1); // Partenope (Copy 0 - bottom)
+    parseCollection(id2); // Giunone   (Copy 1 - middle)
+    parseCollection(id3); // Minerva   (Copy 2 - top)
 
     // Finalize metrics calculation and write out to the CSV file
     analysis->EndOfEvent(event);

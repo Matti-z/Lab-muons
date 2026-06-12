@@ -44,11 +44,7 @@ void Analysis::PrepareNewRun(const G4Run* aRun)
     
     G4cout << "Successfully opened CSV file: " << filename << G4endl;
     
-    // Header with correct detector mapping:
-    // Copy 0 = Partenope (Z = 0.0 cm) -> Top
-    // Copy 2 = Minerva (Z = 9.9 cm) -> Middle
-    // Copy 1 = Giunone (Z = 14.3 cm) -> Bottom
-    csvFile << "EventID,Coincidence,PartenopeHit,MinervaHit,GiunoneHit,Decay,DecayTime_ns\n";
+    csvFile << "EventID,Coincidence,HitTop,HitMiddle,HitBottom,Decay,DecayTime_ns\n";
     csvFile.flush();
 }
 
@@ -88,20 +84,20 @@ void Analysis::EndOfEvent(const G4Event* event)
     std::vector<G4double> middleTimes;
 
     // 1. Process hits based on actual physical layout
-    // Copy 0 = Partenope (Z = 0) -> Top
-    // Copy 2 = Minerva (Z = 9.9 cm) -> Middle
-    // Copy 1 = Giunone (Z = 14.3 cm) -> Bottom
+    // Copy 0 = Partenope  -> bottom
+    // Copy 2 = Minerva  -> top
+    // Copy 1 = Giunone  -> mid
     for (size_t i = 0; i < thisEventData.numHits; ++i) {
         G4int layer = thisEventData.scintillatorIDs[i];
         
-        if (layer == 1) {
+        if (layer == 2) {
             hitTop = 1;
         }
-        if (layer == 2) {  // Changed from 'else if' to 'if'
+        if (layer == 1) { 
             hitMiddle = 1;
             middleTimes.push_back(thisEventData.hitTimes[i]);
         }
-        if (layer == 0) {  // Changed from 'else if' to 'if'
+        if (layer == 0) {  
             hitBottom = 1;
         }
     }

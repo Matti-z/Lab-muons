@@ -46,14 +46,15 @@ void DetectorConstruction::ComputeParameters(){
     halfWrldLength = 2 * m;
 
     posFirstScintillator = G4ThreeVector(0., scint1_YOffset, 0.);
-    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (12.8+(3/2))* cm); 
-    posThirdScintillator = G4ThreeVector(0., scint3_YOffset, (8.4+(3/2))* cm);
+    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (8.4+(3/2))* cm); 
+    posThirdScintillator = G4ThreeVector(0., scint3_YOffset, (12.8+(3/2))* cm);
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct(){
-    G4cout << "Computed tolerance = "
-           << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/cm
-           << " cm" << G4endl;
+    ComputeParameters();
+    // G4cout << "Computed tolerance = "
+    //        << G4GeometryTolerance::GetInstance()->GetSurfaceTolerance()/cm
+    //        << " cm" << G4endl;
 
     G4Box* solidWrld = new G4Box("World", halfWrldLength, halfWrldLength, halfWrldLength);
     logicWrld = new G4LogicalVolume(solidWrld, air, "World", 0, 0, 0);
@@ -101,7 +102,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
 
     // Add reflectivity properties
     G4MaterialPropertiesTable* foilMPT = new G4MaterialPropertiesTable();
-    G4double photonEnergy[] = {1.0*eV, 0.5*MeV};
+    G4double photonEnergy[] = {10.0*eV, 0.5*MeV};
     G4double reflectivity[] = {0.95, 0.95}; 
     foilMPT->AddProperty("REFLECTIVITY", photonEnergy, reflectivity, 2);
     alFoilSurface->SetMaterialPropertiesTable(foilMPT);
@@ -199,8 +200,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
         false,
         2,                     // Copy number 2
         false);
-
-    // NOTE: G4LogicalSkinSurface for Minerva is omitted here so there is no metal skin.
+    
+    new G4LogicalSkinSurface("Minerva_Skin", logicScintM, alFoilSurface);
 
     // --- Visualization ---
     logicScintP->SetVisAttributes(new G4VisAttributes(G4Colour::Yellow()));
