@@ -23,37 +23,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   gun = InitializeGPS();
   
 }
-//forse la seguente è sbagliata, forse anche la generazione su phi segue cos^2/3, la aggiungo sotto
-// void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-// {
-// G4double theta;
-//     G4double phi;
-
-//     // Rejection sampling
-//     while(true)
-//     {
-//         theta = acos(G4UniformRand());
-
-//         G4double y = G4UniformRand();
-
-//         if(y < pow(cos(theta), 2.0/3.0))
-//             break;
-//     }
-
-//     phi = 2*pi*G4UniformRand();
-
-//     // Convert spherical -> Cartesian
-//     G4double dx = sin(theta)*cos(phi);
-//     G4double dy = sin(theta)*sin(phi);
-//     G4double dz = -cos(theta);
-
-//     gun->GetCurrentSource()
-//        ->GetAngDist()
-//        ->SetParticleMomentumDirection(
-//             G4ThreeVector(dx,dy,dz));
-
-//     gun->GeneratePrimaryVertex(anEvent);
-// }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
@@ -63,14 +32,15 @@ G4double theta;
     // Rejection sampling
     while(true)
     {
-        theta = acos(G4UniformRand());
+        // theta = acos(G4UniformRand());
+        theta = acos(1.0 - 2.0*G4UniformRand()); 
 
         G4double y = G4UniformRand();
 
-        // if(y < pow(cos(theta), 2.0/3.0))
+        if(y < pow(cos(theta), 2.0/3.0))
         // if(y < pow(cos(theta), 2.0))
-        // if(y < pow(cos(theta), 1.0/3))
-        if ( y < pow(cos(theta), 1))
+        // if(y < pow(cos(theta), 1.0/3.0))
+        // if ( y < pow(cos(theta), 1.0))
             break;
     }
 
