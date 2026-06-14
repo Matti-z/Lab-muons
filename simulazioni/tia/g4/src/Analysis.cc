@@ -87,6 +87,8 @@ void Analysis::EndOfEvent(const G4Event* event)
     // Copy 0 = Partenope  -> bottom
     // Copy 2 = Minerva  -> top
     // Copy 1 = Giunone  -> mid
+    //cambio layer per sim efficiency minerva
+    //
     for (size_t i = 0; i < thisEventData.numHits; ++i) {
         G4int layer = thisEventData.scintillatorIDs[i];
         
