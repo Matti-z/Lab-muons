@@ -33,7 +33,7 @@ void Analysis::PrepareNewRun(const G4Run* aRun)
     thisRunNumHits = 0;
 
     // Open file streaming
-    G4String filename = "../results/mgp/cos_2_3/run_" + std::to_string(aRun->GetRunID()) + ".csv";
+    G4String filename = "../results/gmp/cos_2_3/run_" + std::to_string(aRun->GetRunID()) + ".csv";
     csvFile.open(filename);
     csvFileValid = csvFile.is_open();
     
@@ -88,14 +88,14 @@ void Analysis::EndOfEvent(const G4Event* event)
     // Copy 2 = Minerva  -> top
     // Copy 1 = Giunone  -> mid
     //cambio layer per sim efficiency minerva
-    //
+    //gmp: g top, m middle, p bottom
     for (size_t i = 0; i < thisEventData.numHits; ++i) {
         G4int layer = thisEventData.scintillatorIDs[i];
-        
-        if (layer == 2) {
+        //ora è gmp
+        if (layer == 1) {
             hitTop = 1;
         }
-        if (layer == 1) { 
+        if (layer == 2) { 
             hitMiddle = 1;
             middleTimes.push_back(thisEventData.hitTimes[i]);
         }
