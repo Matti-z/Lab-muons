@@ -3,7 +3,7 @@
 
 /control/verbose 1
 /run/verbose 1
-/random/setSeeds 0 0
+
 
 #to change particle
 #/gps/particle mu-
