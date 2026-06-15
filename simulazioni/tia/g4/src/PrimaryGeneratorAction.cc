@@ -33,14 +33,14 @@ G4double theta;
     while(true)
     {
         // theta = acos(G4UniformRand());
-        theta = acos(1.0 - 2.0*G4UniformRand()); 
+        theta = acos(G4UniformRand()); 
 
         G4double y = G4UniformRand();
 
-        // if(y < pow(cos(theta), 2.0/3.0))
+        // if(y < pow(cos(theta), (2.0/3.0)))
         // if(y < pow(cos(theta), 2.0))
-        if(y < pow(cos(theta), 1.0/3.0))
-        // if ( y < pow(cos(theta), 1.0))
+        if(y < pow(cos(theta), (1.0/3.0)))
+        // if ( y < pow(cos(theta), 1.0)) 
             break;
     }
 
