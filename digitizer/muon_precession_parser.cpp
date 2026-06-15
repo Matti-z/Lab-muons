@@ -9,10 +9,9 @@
 #include "libraries/xml_parser.hpp"
 #include "libraries/progress_bar.hpp"
 
-// TODO bicchiere di petrolio
 
 #define DELTA 400
-#define ELECTRON_CHECK_LIMIT_INDEX 40
+#define ELECTRON_CHECK_LIMIT_INDEX 250
 #define PULSE_WIDTH 12  
 
 
@@ -99,6 +98,7 @@ void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<sho
             double timestamp = double(traceStartingIndex - traceIndex) / freq;
             timestamps.push_back(timestamp);
             isTriggered = true;
+            
         }
 
         // detect falltime -> stop of muon signal
