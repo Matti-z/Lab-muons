@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-tree = ET.parse("digitizer/dMinerva_22_05_2026_8_54.xml")
+tree = ET.parse("s_f_2505.xml")
 root = tree.getroot()
 # print(root.tag)
 
