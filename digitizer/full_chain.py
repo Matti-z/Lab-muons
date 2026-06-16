@@ -22,7 +22,7 @@ a = [
 
 print(os.listdir(universal_dir("big_data/asimmetrie")))
 
-f = "s_f_2505.xml"
+f = "s_f_0306.xml"
 file = "muon_precession_parser"
 drive = True
 xml_path = universal_dir("big_data/asimmetrie/" + f)
@@ -47,20 +47,20 @@ subprocess.run(
     capture_output=False,
 )
 
-subprocess.run(
-    [
-        "git",
-        "add",
-        universal_dir("Data/timestamp/*"),
-        universal_dir("Data/settings/*"),
-    ],
-    capture_output=False,
-)
-subprocess.run(
-    ["git", "commit", "-m", "Update timestamp data " + xml_filename],
-    capture_output=False,
-)
-subprocess.run(["git", "push"], capture_output=False)
+# subprocess.run(
+#     [
+#         "git",
+#         "add",
+#         universal_dir("Data/timestamp/*"),
+#         universal_dir("Data/settings/*"),
+#     ],
+#     capture_output=False,
+# )
+# subprocess.run(
+#     ["git", "commit", "-m", "Update timestamp data " + xml_filename],
+#     capture_output=False,
+# )
+# subprocess.run(["git", "push"], capture_output=False)
 
-if sync_local_folder_to_drive is not None:
-    sync_local_folder_to_drive()
+# if sync_local_folder_to_drive is not None:
+#     sync_local_folder_to_drive()
