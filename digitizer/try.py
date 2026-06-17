@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-tree = ET.parse("s_f_2505.xml")
+tree = ET.parse("big_data/asimmetrie/s_f_2505.xml")
 root = tree.getroot()
 # print(root.tag)
 
