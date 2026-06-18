@@ -76,6 +76,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
     logicWrld->SetVisAttributes(invisAttr);
 
     return physiWrld;
+
 }
 
 G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
@@ -203,9 +204,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
     
     new G4LogicalSkinSurface("Minerva_Skin", logicScintM, alFoilSurface);
 
-    // --- Visualization ---
+    // // --- Visualization ---
     logicScintP->SetVisAttributes(new G4VisAttributes(G4Colour::Yellow()));
-    logicScintG->SetVisAttributes(new G4VisAttributes(G4Colour::Blue()));
+    logicScintG->SetVisAttributes(new G4VisAttributes(G4Colour::Green()));
     logicScintM->SetVisAttributes(new G4VisAttributes(G4Colour::Red()));
 
     // --- Sensitive Detectors ---
