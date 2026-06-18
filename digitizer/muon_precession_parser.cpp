@@ -9,12 +9,9 @@
 #include "libraries/xml_parser.hpp"
 #include "libraries/progress_bar.hpp"
 
-// TODO bicchiere di petrolio
 
 #define DELTA 400
-#define ELECTRON_CHECK_LIMIT_INDEX 40
-#define PULSE_WIDTH 12  
-
+#define ELECTRON_CHECK_LIMIT_INDEX 250
 
 
 void usage(){
@@ -87,9 +84,10 @@ void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<sho
     //         break;
     //     }
     // }
+    int highScintillatorShiftIndex = 15;
     
     afterElectronIndex = electronCheckIndex;
-
+    if ( afterElectronIndex > muon.size() - highScintillatorShiftIndex) highScintillatorShiftIndex = muon.size() - afterElectronIndex;
     // loop to actually find the timestamps
     for (int traceIndex = afterElectronIndex; traceIndex >= 0; traceIndex--)
     {
@@ -97,8 +95,12 @@ void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<sho
         if (muon[traceIndex] < baselineMuon - DELTA && !isTriggered)
         {
             double timestamp = double(traceStartingIndex - traceIndex) / freq;
+            
             timestamps.push_back(timestamp);
             isTriggered = true;
+            topSignal = false;
+            hasLowTriggered = false;
+            
         }
 
         // detect falltime -> stop of muon signal
@@ -108,6 +110,8 @@ void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<sho
                 timestamps.pop_back();
                 continue;
             }
+            topSignal = false;
+            hasLowTriggered = false;
         }
         // check if low_scint: 
         if ( low_scint[traceIndex] < baselineLowScint - DELTA && isTriggered && !hasLowTriggered){
@@ -117,8 +121,9 @@ void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<sho
         }
 
         if ( low_scint[traceIndex] > baselineLowScint - DELTA && hasLowTriggered) hasLowTriggered = false;
+        // if ( high_scint[traceIndex]> baselineHighScint - DELTA && topSignal) topSignal = false;
+        if ( high_scint[traceIndex + highScintillatorShiftIndex]< baselineHighScint - DELTA && isTriggered) topSignal = true;
         
-        if ( high_scint[traceIndex]< baselineHighScint - DELTA && isTriggered) topSignal = true;
     }
 }
 
@@ -138,6 +143,7 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
         if(high_scint[g_index] < baselineHighScint - DELTA){ // if the electron is spotted
             muon_check(g_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(true);
+            break;
         }
     }
     // loop over a short range in which the electron should fall into
@@ -145,6 +151,7 @@ void timestamp_calculator(int last_trace_index, double freq, std::vector<std::ve
         if(low_scint[p_index] < baselineLowScint - DELTA){ // if the electron is spotted
             muon_check(p_index , freq, trace_vector, timestamps);
             while( dataset_discriminator.size() < timestamps.size()) dataset_discriminator.push_back(false);
+            break;
         }
     }
 
