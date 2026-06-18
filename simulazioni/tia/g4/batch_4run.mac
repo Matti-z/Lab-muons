@@ -49,7 +49,7 @@
 /detector/scint1YOffset 60 cm
 /run/reinitializeGeometry
 /gps/particle mu-
-/run/beamOn 100000
+/run/beamOn 1000000
 
 /gps/particle mu+
-/run/beamOn 100000
+/run/beamOn 1000000
