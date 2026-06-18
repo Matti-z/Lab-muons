@@ -10,6 +10,17 @@ except ImportError:
 
 default_dir = str(Path(".").resolve()).split("/Lab-muons")[0] + "/Lab-muons/"
 universal_dir = lambda path: default_dir + path
+# list of xml files (converted from inline filenames)
+b = [
+    "s_nf_1505.xml",
+    "s_nf_1805.xml",
+    "s_nf_2205.xml",
+    "s_nf_1405.xml",
+    "s_nf_1505bis.xml",
+    "s_nf_2005.xml",
+]
+
+
 
 a = [
     "s_f_0306.xml",
@@ -20,13 +31,12 @@ a = [
     "s_f_2905.xml",
 ]
 
-print(os.listdir(universal_dir("big_data/asimmetrie")))
 
 
-for f in a:
+for f in b:
     file = "muon_precession_parser"
     drive = True
-    xml_path = universal_dir("big_data/asimmetrie/" + f)
+    xml_path = universal_dir("big_data/solenoid_nofield/" + f)
     xml_filename = xml_path.split("/")[-1].removesuffix(".xml")
     csv_folder = universal_dir("Data/timestamp/")
     csv_settings_folder = universal_dir("Data/settings/")
