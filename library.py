@@ -73,9 +73,17 @@ def function_generator_with_min_max(func: Callable, dataset: np.ndarray) -> Call
     )
     return wrapper
 
+def model_function_builder(creator:Callable , dataset):
+    model_function = function_generator_with_variable_N(creator, len(dataset))
+    sig_params = inspect.signature(model_function).parameters
+    if "min" in sig_params and "max" in sig_params:
+        model_function = function_generator_with_min_max(model_function, dataset)
+    return model_function
+
+
 
 def dataset_analysis(
-    dataset: np.ndarray, creator: Callable, bins: SupportsIndex, args: dict
+    dataset: np.ndarray, creator: Callable, bins: SupportsIndex, args: dict , model_function = None
 ) -> Minuit:
     """Create a binned likelihood cost and initialize a Minuit minimizer.
 
@@ -107,11 +115,8 @@ def dataset_analysis(
     KeyError
         If args is missing a key required by the model function.
     """
-
-    model_function = function_generator_with_variable_N(creator, len(dataset))
-    sig_params = inspect.signature(model_function).parameters
-    if "min" in sig_params and "max" in sig_params:
-        model_function = function_generator_with_min_max(model_function, dataset)
+    if model_function is None:
+        model_function = model_function_builder( creator , dataset)
 
     count, edges = np.histogram(dataset, bins=bins)
     cost = ExtendedBinnedNLL(count, edges, model_function)
