@@ -5,13 +5,14 @@ LDFLAGS = -lpugixml
 OUTPUT_DIR = bin
 LIB_DIR = libraries
 
-SOURCES = xml_csv_parser_multichannel.cpp 
-TARGET = $(OUTPUT_DIR)/multichannel_parser
+# SOURCES = xml_csv_parser_multichannel.cpp
+SOURCES = muon_precession_parser.cpp
+TARGET = $(OUTPUT_DIR)/$(basename $(notdir $(SOURCES)))
 
 
-
-LIBRARIES = $(LIB_DIR)/*.cpp
-OBJECTS = $(SOURCES: .cpp=.o) $(LIBRARIES: .cpp=.o)
+LIBRARIES = $(wildcard $(LIB_DIR)/*.cpp)
+LIB_OBJECTS = $(patsubst %.cpp,%.o,$(LIBRARIES))
+OBJECTS = $(patsubst %.cpp,%.o,$(SOURCES)) $(LIB_OBJECTS)
 
 # result file needs all object files
 $(TARGET): $(OBJECTS) $(OUTPUT_DIR)
@@ -19,9 +20,9 @@ $(TARGET): $(OBJECTS) $(OUTPUT_DIR)
 	$(CXX) $(OBJECTS) $(LDFLAGS) -o $(TARGET)
 
 $(OUTPUT_DIR):
-	mkdir $(OUTPUT_DIR)
+	mkdir -p $(OUTPUT_DIR)
 
-%.o:%.cpp
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:

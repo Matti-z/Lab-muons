@@ -1,7 +1,6 @@
-import subprocess
 import os
+import subprocess
 from pathlib import Path
-from root_to_timestamp import process_root_files, root_settings_to_csv
 
 try:
     from drive_sync import sync_local_folder_to_drive
@@ -9,50 +8,70 @@ except ImportError:
     sync_local_folder_to_drive = None
 
 
-
-
-
-default_dir = str(Path(".").resolve()).split("/Lab-muons")[0]+"/Lab-muons/"
+default_dir = str(Path(".").resolve()).split("/Lab-muons")[0] + "/Lab-muons/"
 universal_dir = lambda path: default_dir + path
+# list of xml files (converted from inline filenames)
+b = [
+    "s_nf_1505.xml",
+    "s_nf_1805.xml",
+    "s_nf_2205.xml",
+    "s_nf_1405.xml",
+    "s_nf_1505bis.xml",
+    "s_nf_2005.xml",
+]
 
 
 
-
-
-file = "multichannel_parser"
-drive = True
-xml_path = universal_dir("big_data/dMinerva_22_05_2026_8_54.xml")
-xml_filename = xml_path.split('/')[-1].removesuffix(".xml")
-csv_folder = universal_dir("Data/timestamp/")
-csv_settings_folder = universal_dir("Data/settings/")
-
-
-root_path = universal_dir("big_data/root/"+xml_filename+"/")
-
-
-os.makedirs(os.path.dirname(csv_folder), exist_ok=True)
-os.makedirs(os.path.dirname(xml_path), exist_ok=True)
-os.makedirs(os.path.dirname(root_path), exist_ok=True)
-os.makedirs(os.path.dirname(csv_settings_folder), exist_ok=True)
-
-if file == "root_parser":
-    subprocess.run([universal_dir("digitizer/bin/root_parser"), xml_path, root_path], capture_output=False)
-    process_root_files(root_path , csv_folder , xml_filename)
-    root_settings_to_csv( root_path , csv_settings_folder , xml_filename)
-elif file == "multichannel_parser" or file == "inverse_parser":
-    subprocess.run([universal_dir("digitizer/bin/" + file), xml_path, csv_folder , csv_settings_folder], capture_output=False)
-else:
-    raise KeyError("file is not one of the executable")
-    
-
-subprocess.run(['git', 'add', universal_dir("Data/timestamp/*") , universal_dir("Data/settings/*")], capture_output=False)
-subprocess.run(['git', 'commit', '-m', 'Update timestamp data ' + xml_filename], capture_output=False)
-subprocess.run(['git', 'push'], capture_output=False)
+a = [
+    "s_f_0306.xml",
+    "s_f_2505.xml",
+    "s_f_2605_bis.xml",
+    "s_f_2605.xml",
+    "s_f_2905_bis.xml",
+    "s_f_2905.xml",
+]
 
 
 
-if sync_local_folder_to_drive is not None:
-    sync_local_folder_to_drive()
+for f in b:
+    file = "muon_precession_parser"
+    drive = True
+    xml_path = universal_dir("big_data/solenoid_nofield/" + f)
+    xml_filename = xml_path.split("/")[-1].removesuffix(".xml")
+    csv_folder = universal_dir("Data/timestamp/")
+    csv_settings_folder = universal_dir("Data/settings/")
 
+    root_path = universal_dir("big_data/root/" + xml_filename + "/")
 
+    os.makedirs(os.path.dirname(csv_folder), exist_ok=True)
+    os.makedirs(os.path.dirname(xml_path), exist_ok=True)
+    os.makedirs(os.path.dirname(root_path), exist_ok=True)
+    os.makedirs(os.path.dirname(csv_settings_folder), exist_ok=True)
 
+    subprocess.run(
+        [
+            universal_dir("digitizer/bin/" + file),
+            xml_path,
+            csv_folder,
+            csv_settings_folder,
+        ],
+        capture_output=False,
+    )
+
+    subprocess.run(
+        [
+            "git",
+            "add",
+            universal_dir("Data/timestamp/*"),
+            universal_dir("Data/settings/*"),
+        ],
+        capture_output=False,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Update timestamp data " + xml_filename],
+        capture_output=False,
+    )
+    subprocess.run(["git", "push"], capture_output=False)
+
+    if sync_local_folder_to_drive is not None:
+        sync_local_folder_to_drive()

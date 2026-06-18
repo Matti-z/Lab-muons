@@ -1,9 +1,10 @@
+import inspect
 from collections.abc import Callable
 from typing import SupportsIndex
-import inspect
+
+import numpy as np
 from iminuit import Minuit
 from iminuit.cost import ExtendedBinnedNLL, ExtendedUnbinnedNLL
-import numpy as np
 from IPython.display import display
 
 
@@ -11,17 +12,21 @@ from IPython.display import display
 def function_generator_with_variable_N(func: Callable, N: int) -> Callable:
     sig = inspect.signature(func)
     if "x" not in sig.parameters or "N" not in sig.parameters:
-        raise SyntaxError("function defined wrong: it needs an x as first parameter and N as other parameter")
+        raise SyntaxError(
+            "function defined wrong: it needs an x as first parameter and N as other parameter"
+        )
+
     def wrapper(x, *args, **kwargs):
         return func(x, N, *args, **kwargs)
 
     wrapper.__signature__ = inspect.Signature(
-        [inspect.Parameter('x', inspect.Parameter.POSITIONAL_OR_KEYWORD)] +
-        list(inspect.signature(func).parameters.values())[2:]
+        [inspect.Parameter("x", inspect.Parameter.POSITIONAL_OR_KEYWORD)]
+        + list(inspect.signature(func).parameters.values())[2:]
     )
     return wrapper
 
-def function_generator_with_min_max( func:Callable , dataset:np.ndarray) -> Callable:
+
+def function_generator_with_min_max(func: Callable, dataset: np.ndarray) -> Callable:
     """Wrap a model function to bind dataset min and max into its signature.
 
     The provided `func` is expected to accept at least the parameters
@@ -50,19 +55,28 @@ def function_generator_with_min_max( func:Callable , dataset:np.ndarray) -> Call
         If `func` does not have parameters named "x", "min", and "max".
     """
     sig = inspect.signature(func)
-    if "x" not in sig.parameters or "min" not in sig.parameters or "max" not in sig.parameters:
-        raise SyntaxError("function defined wrong: it needs parameters 'x', 'min' and 'max'")
+    if (
+        "x" not in sig.parameters
+        or "min" not in sig.parameters
+        or "max" not in sig.parameters
+    ):
+        raise SyntaxError(
+            "function defined wrong: it needs parameters 'x', 'min' and 'max'"
+        )
 
     def wrapper(x, *args, **kwargs):
         return func(x, min(dataset), max(dataset), *args, **kwargs)
 
     wrapper.__signature__ = inspect.Signature(
-        [inspect.Parameter('x', inspect.Parameter.POSITIONAL_OR_KEYWORD)] +
-        list(inspect.signature(func).parameters.values())[3:]
+        [inspect.Parameter("x", inspect.Parameter.POSITIONAL_OR_KEYWORD)]
+        + list(inspect.signature(func).parameters.values())[3:]
     )
     return wrapper
 
-def dataset_analysis(dataset: np.ndarray , creator: Callable, bins: SupportsIndex, args: dict) -> Minuit:
+
+def dataset_analysis(
+    dataset: np.ndarray, creator: Callable, bins: SupportsIndex, args: dict
+) -> Minuit:
     """Create a binned likelihood cost and initialize a Minuit minimizer.
 
     Parameters
@@ -102,7 +116,9 @@ def dataset_analysis(dataset: np.ndarray , creator: Callable, bins: SupportsInde
     count, edges = np.histogram(dataset, bins=bins)
     cost = ExtendedBinnedNLL(count, edges, model_function)
 
-    param_names = [name for name in inspect.signature(model_function).parameters if name != "x"]
+    param_names = [
+        name for name in inspect.signature(model_function).parameters if name != "x"
+    ]
     missing = [name for name in param_names if name not in args]
     if missing:
         raise KeyError(f"args is missing keys: {missing}")
@@ -114,7 +130,9 @@ def dataset_analysis(dataset: np.ndarray , creator: Callable, bins: SupportsInde
     return minuit_element
 
 
-def dataset_analysis_unbinned(dataset: np.ndarray , creator: Callable, args: dict) -> Minuit:
+def dataset_analysis_unbinned(
+    dataset: np.ndarray, creator: Callable, args: dict
+) -> Minuit:
     """Create an unbinned likelihood cost and initialize a Minuit minimizer.
 
     Parameters
@@ -152,7 +170,9 @@ def dataset_analysis_unbinned(dataset: np.ndarray , creator: Callable, args: dic
 
     cost = ExtendedUnbinnedNLL(dataset, model_function)
 
-    param_names = [name for name in inspect.signature(model_function).parameters if name != "x"]
+    param_names = [
+        name for name in inspect.signature(model_function).parameters if name != "x"
+    ]
     missing = [name for name in param_names if name not in args]
     if missing:
         raise KeyError(f"args is missing keys: {missing}")
@@ -164,7 +184,7 @@ def dataset_analysis_unbinned(dataset: np.ndarray , creator: Callable, args: dic
     return minuit_element
 
 
-def end(m:Minuit, asym: bool = True) -> None:
+def end(m: Minuit, asym: bool = True) -> None:
     """Run the fit, compute uncertainties, and display the result."""
     m.migrad()
     m.hesse()

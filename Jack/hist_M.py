@@ -29,13 +29,19 @@ def exp_gauss(x, a, b, tau, A, mu, sigma):
 def exp_gauss_pdf(x, a, b, tau, A, mu, sigma):
     return a * N * (expon.pdf(x, A, tau) + b * norm.pdf(x, mu, sigma))
 
+def normalization( model, min_dataset: float , max_dataset:float) -> float:
+    cdf_diff = model.cdf(max_dataset) - model.cdf(min_dataset)
+    return float(np.asarray(cdf_diff).item())
 
+def complete(x, N , mu , sigma , freq_signal, freq_gauss, tau1, A):
+    exp = expon( loc = A , scale = tau1)
+    gauss = norm( loc = mu , scale = sigma)
+    return freq_signal * N * ((1-freq_gauss)*exp.cdf(x)/normalization(exp , 3.04e-7 , 7.448e-6) + freq_gauss * gauss.cdf(x)/normalization(gauss , 3.04e-7 , 7.448e-6)) + (1-freq_signal) * N * uniform.cdf(x, 3.04e-7 , 7.448e-6)
 
-def complete(x, a, b, c, tau, A, mu, sigma ):
-    return a * N * (expon.cdf(x, A, tau) + b * norm.cdf(x, mu, sigma) + c * uniform.cdf(x, 0, 8e-6))
-
-def complete_pdf(x, a, b, c, tau, A, mu, sigma ):
-    return a * N * (expon.pdf(x, A, tau) + b * norm.pdf(x, mu, sigma) + c * uniform.pdf(x, 0, 8e-6))
+def complete_pdf(x, N, mu, sigma, freq_signal, freq_gauss, tau1, A):
+    exp = expon(loc=A, scale=tau1)
+    gauss = norm(loc=mu, scale=sigma)
+    return freq_signal * N * ((1 - freq_gauss) * exp.pdf(x) / normalization(exp, 3.04e-7, 7.448e-6) + freq_gauss * gauss.pdf(x) / normalization(gauss, 3.04e-7, 7.448e-6)) + (1 - freq_signal) * N * uniform.pdf(x, 3.04e-7, 7.448e-6)
 
 
 
@@ -77,18 +83,22 @@ def exp_unif_fit(cdf, a, b, tau, A, count , edges):
     n.hesse()
     return n
 
-def complete_fit(cdf, a, b, c, tau, A, mu, sigma, count , edges):
+
+
+def complete_fit(cdf, N, mu, sigma, freq_signal, freq_gauss, tau1, A, count, edges):
     
     cost = ExtendedBinnedNLL(count, edges, cdf)
-    n = Minuit(cost, a, b, c, tau, A, mu, sigma)
-    # n.fixed['N'] = True
+    n = Minuit(cost, N, mu, sigma, freq_signal, freq_gauss, tau1, A)
     n.fixed['A'] = True
-    #n.fixed['tau'] = True
-    #n.fixed['a'] = True
-    #n.fixed['mu'] = True
-    #n.limits['a'] = (0, 10000)
-    n.limits['b'] = (0, 10000)
-    n.limits['mu'] = (1e-6, None)
+    n.fixed['N'] = True
+    n.fixed['mu'] = False
+    n.fixed['freq_signal'] = True
+    # n.fixed["tau1"] = True
+    n.limits['mu'] = (1.5e-6, 2e-6)
+    n.limits['sigma'] = (1e-12, 4e-6)
+    n.limits['freq_signal'] = (0., 1)
+    n.limits['freq_gauss'] = (0., 1)
+    n.limits['tau1'] = (1e-12, None)
     
     n.migrad()
     n.hesse()
@@ -111,6 +121,8 @@ if __name__ == "__main__":
     timestamp=timestamp[timestamp>3e-7]
     #timestamp=timestamp[timestamp>2e-6]
     count_1, edges_1 =  np.histogram(timestamp, bins=n_bins)
+
+    print(min(timestamp) , max(timestamp))
 
 
 
@@ -156,8 +168,7 @@ if __name__ == "__main__":
     plt.show()'''
 
 
-
-    c = complete_fit(complete, u.values['a'], 0.5, u.values['b'], u.values['tau'], u.values['A'], 1.3e-6, 7e-7, count_1 , edges_1)
+    c = complete_fit(complete, len(timestamp), 1.8e-6,0.5e-6, 0.99,0.5 ,2.218e-6, 0, count_1 , edges_1)
     display(c)
 
     print('p_value =', 1 - chi2.cdf(c.fmin.fval, c.ndof))
@@ -165,12 +176,21 @@ if __name__ == "__main__":
 
     plt.hist(timestamp, bins=70, alpha=0.5, label='Data', color='gray', edgecolor='black')
     x = np.linspace(edges_1[0], edges_1[-1], 1000)
-    y = np.diff(edges_1)[0] * complete_pdf(x, c.values['a'], c.values['b'], c.values['c'], c.values['tau'], c.values['A'], c.values['mu'], c.values['sigma'])
+    y = np.diff(edges_1)[0] * complete_pdf(
+        x,
+        c.values['N'],
+        c.values['mu'],
+        c.values['sigma'],
+        c.values['freq_signal'],
+        c.values['freq_gauss'],
+        c.values['tau1'],
+        c.values['A'],
+    )
     plt.plot(x, y, label=f'Fit', color='green', linewidth=2)
     plt.legend()
     plt.xlabel('Time (s)')
     plt.ylabel('Counts')
-    plt.title('Histogram of Timestamps')
+    plt.title('1')
     plt.show()
 
 
@@ -180,19 +200,28 @@ if __name__ == "__main__":
     old=old[old>4e-7]
     count_old, edges_old =  np.histogram(old, bins=n_bins)
 
-    c_old = complete_fit(complete, u.values['a'], 0.5, u.values['b'], u.values['tau'], u.values['A'], 1.3e-6, 7e-7, count_old , edges_old)
+    c_old = complete_fit(complete, len(old), 1.8e-6,0.5e-6, 0.99,0.5 ,2.218e-6, 0, count_old , edges_old)
     display(c_old)
 
     print('p_value =', 1 - chi2.cdf(c_old.fmin.fval, c_old.ndof))
 
     plt.hist(old, bins=n_bins, alpha=0.5, label='Data', color='gray', edgecolor='black')
     x_old = np.linspace(edges_old[0], edges_old[-1], 1000)
-    y_old = np.diff(edges_old)[0] * complete_pdf(x_old, c_old.values['a'], c_old.values['b'], c_old.values['c'], c_old.values['tau'], c_old.values['A'], c_old.values['mu'], c_old.values['sigma'])
+    y_old = np.diff(edges_old)[0] * complete_pdf(
+        x_old,
+        c_old.values['N'],
+        c_old.values['mu'],
+        c_old.values['sigma'],
+        c_old.values['freq_signal'],
+        c_old.values['freq_gauss'],
+        c_old.values['tau1'],
+        c_old.values['A'],
+    )
     plt.plot(x_old, y_old, label=f'Fit', color='green', linewidth=2)
     plt.legend()
     plt.xlabel('Time (s)')
     plt.ylabel('Counts')
-    plt.title('Histogram of Timestamps')
+    plt.title('2')
     plt.show()
 
 
@@ -207,25 +236,43 @@ if __name__ == "__main__":
     count_norm, edges_norm =  np.histogram(timestamp_1, bins=np.linspace(start,end,nbins+1), density=True)
     count_old_norm, edges_old_norm =  np.histogram(old_1, bins=np.linspace(start,end,nbins+1), density=True)
 
-    n = complete_fit(complete, c.values['a']/N, c.values['c'], c.values['b'], c.values['tau'], c.values['A'], c.values['mu'], c.values['sigma'], count_norm , edges_norm)
+    n = complete_fit(complete, len(timestamp_1), 1.8e-6,0.5e-6, 0.99,0.5 ,2.218e-6, 0, count_norm , edges_norm)
     display(n)
-    no = complete_fit(complete, u.values['a'], 0.5, u.values['b'], u.values['tau'], u.values['A'], 1.3e-6, 7e-7, count_old_norm , edges_old_norm)
+    no = complete_fit(complete, len(old_1), 1.8e-6,0.5e-6, 0.99,0.5 ,2.218e-6, 0, count_old_norm , edges_old_norm)
     display(no)
 
     plt.hist(timestamp, bins=n_bins, alpha=0.5, label='Data', color='gray', edgecolor='black', density=True)
     x = np.linspace(edges_norm[0], edges_norm[-1], 1000)
-    y = np.diff(edges_norm)[0] * complete_pdf(x, n.values['a'], n.values['b'], n.values['c'], n.values['tau'], n.values['A'], n.values['mu'], n.values['sigma'])
+    y = np.diff(edges_norm)[0] * complete_pdf(
+        x,
+        n.values['N'],
+        n.values['mu'],
+        n.values['sigma'],
+        n.values['freq_signal'],
+        n.values['freq_gauss'],
+        n.values['tau1'],
+        n.values['A'],
+    )
     plt.plot(x, y, label=f'Fit', color='green', linewidth=2)
 
     #plt.hist(old, bins=n_bins, alpha=0.5, label='Old Data', color='blue', edgecolor='black', density=True)
     x_old = np.linspace(edges_old_norm[0], edges_old_norm[-1], 1000)
-    y_old = np.diff(edges_old_norm)[0] * complete_pdf(x_old, no.values['a'], no.values['b'], no.values['c'], no.values['tau'], no.values['A'], no.values['mu'], no.values['sigma'])
+    y_old = np.diff(edges_old_norm)[0] * complete_pdf(
+        x_old,
+        no.values['N'],
+        no.values['mu'],
+        no.values['sigma'],
+        no.values['freq_signal'],
+        no.values['freq_gauss'],
+        no.values['tau1'],
+        no.values['A'],
+    )
     #plt.plot(x_old, y_old, label=f'Old Fit', color='blue', linewidth=2)
 
     plt.legend()
     plt.xlabel('Time (s)')
     plt.ylabel('Counts')
-    plt.title('Histogram of Timestamps')
+    plt.title('3')
     plt.show()
 
 
@@ -239,6 +286,6 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel('Time (s)')
     plt.ylabel('Counts')
-    plt.title('Histogram of Timestamps')
+    plt.title('4')
     plt.show()
     
