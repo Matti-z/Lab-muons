@@ -175,9 +175,9 @@ class plots:
         if len(label)<4:
             raise ValueError(str)
 
-        data_exp1 = self.__generate_dataset__( 0 , self.interp.values["tau1"] , expon , self.interp.values["freq_exp1"])
-        data_exp2 = self.__generate_dataset__( 0 , self.interp.values["tau2"], expon , self.interp.values["freq_exp2"])
-        data_unif = self.__generate_dataset__( *self.range , uniform , 1-self.interp.values["freq_exp1"]-self.interp.values["freq_exp2"])
+        data_exp1 = self.__generate_dataset__( 0 , self.interp.values["tau1"] , expon , self.interp.values["freq_exp"]*(1-self.interp.values["relative_freq"]))
+        data_exp2 = self.__generate_dataset__( 0 , self.interp.values["tau2"], expon , self.interp.values["freq_exp"]*self.interp.values["relative_freq"])
+        data_unif = self.__generate_dataset__( *self.range , uniform , 1-self.interp.values["freq_exp"])
 
         bin_edges = np.linspace(*self.range , bin_count+1)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
