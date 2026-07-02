@@ -9,3 +9,5 @@ pathlib
 nbformat
 uproot
 tqdm
+sympy
+IPython
