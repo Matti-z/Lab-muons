@@ -87,7 +87,7 @@ void muon_check(int traceStartingIndex ,double freq, std::vector<std::vector<sho
     int highScintillatorShiftIndex = 15;
     
     afterElectronIndex = electronCheckIndex;
-    if ( afterElectronIndex > muon.size() - highScintillatorShiftIndex) highScintillatorShiftIndex = muon.size() - afterElectronIndex;
+    if ( afterElectronIndex > muon.size() - highScintillatorShiftIndex) highScintillatorShiftIndex = muon.size() - afterElectronIndex - 1;
     // loop to actually find the timestamps
     for (int traceIndex = afterElectronIndex; traceIndex >= 0; traceIndex--)
     {
