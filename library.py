@@ -258,7 +258,7 @@ def dataset_analysis(
     dataset : np.ndarray
         One-dimensional array of observed data points.
     creator : Callable
-        A function that builds the model. It must accept (x, N, ...) where
+        A function that builds the model. It must accept (x, N, min, max, ...) where
         N is the dataset length; optional `min` and `max` parameters are
         supported and will be supplied from the dataset when present.
     bins : SupportsIndex
@@ -267,6 +267,9 @@ def dataset_analysis(
         Dictionary of initial parameter values keyed by parameter name. The
         keys must match the parameter names of the model function (excluding
         the "x" argument).
+    model_function: Callable 
+        if given it skips the creation of the model by substituing range and 
+        size of dataset and proceed with the interpolation
 
     Returns
     -------
