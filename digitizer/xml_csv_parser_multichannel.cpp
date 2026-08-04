@@ -173,7 +173,7 @@ void trace_to_timestamp(pugi::xml_node &event , std::vector<double>& timestamps 
         // check if the dataset is worth to save
         check_multitrace(iss, save, trace_vector, channel);
 
-        if (trace_vector[channel].size() != size) { std::cout << "trace of unexpected size detected\n"; exit(-1); }
+        if (trace_vector[channel].size() != size) { std::cout << "trace of unexpected size detected\t ch:" << channel << "\t tr_size: "<< trace_vector[channel].size()<<"\n"; exit(-1); }
     }
     if (save) timestamp_calculator(last_trace_index, freq, trace_vector, timestamps , discriminator);
     
