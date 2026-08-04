@@ -6,7 +6,7 @@ OUTPUT_DIR = bin
 LIB_DIR = libraries
 
 # SOURCES = xml_csv_parser_multichannel.cpp
-SOURCES = muon_precession_parser.cpp
+SOURCES = xml_csv_parser_multichannel.cpp
 TARGET = $(OUTPUT_DIR)/$(basename $(notdir $(SOURCES)))
 
 
