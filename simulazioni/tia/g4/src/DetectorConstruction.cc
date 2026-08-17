@@ -46,7 +46,7 @@ void DetectorConstruction::ComputeParameters(){
     halfWrldLength = 2 * m;
 
     posFirstScintillator = G4ThreeVector(0., scint1_YOffset, 0.);
-    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (8.4+(3/2))* cm); //25.3 se gmp, 8.4 se mgp
+    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (25.3+(3/2))* cm); //25.3 se gmp, 8.4 se mgp
     posThirdScintillator = G4ThreeVector(0., scint3_YOffset, (12.8+(3/2))* cm);
 }
 
