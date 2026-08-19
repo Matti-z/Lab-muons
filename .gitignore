@@ -108,3 +108,7 @@ csv
 parser
 root_parser
 csv_parser
+
+# Generated simulation inputs
+/simulazioni/tia/g4/results/gmp/**/*.csv
+/simulazioni/tia/g4/results/mgp/**/*.csv
