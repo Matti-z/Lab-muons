@@ -38,9 +38,9 @@ G4double theta;
         G4double y = G4UniformRand();
 
         // if(y < pow(cos(theta), (2.0/3.0)))
-        if(y < pow(cos(theta), 2.0))
+        // if(y < pow(cos(theta), 2.0))
         // if(y < pow(cos(theta), (1.0/3.0)))
-        // if ( y < pow(cos(theta), 1.0)) 
+        if ( y < pow(cos(theta), 1.0)) 
             break;
     }
 
@@ -88,7 +88,7 @@ G4GeneralParticleSource* PrimaryGeneratorAction::InitializeGPS()
   // set position distribution
   G4SPSPosDistribution *posDist = gps->GetCurrentSource()->GetPosDist();
   posDist->SetPosDisType("Plane");  // or Point,Plane,Volume,Beam
-  posDist->SetCentreCoords(G4ThreeVector(0, 0, 28*cm));  // Center of plane
+  posDist->SetCentreCoords(G4ThreeVector(0, 0, 17*cm));  // Center of plane 28 if gmp.
   // posDist->SetHalfX(40*cm);   // Half-width in X direction
   // posDist->SetHalfY(10*cm);   // Half-width in Y direction
   posDist->SetPosDisShape("Circle");  // or "Circle", "Ellipse"

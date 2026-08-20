@@ -13,43 +13,43 @@
 /detector/scint1YOffset 0 cm
 /run/reinitializeGeometry
 /gps/particle mu-
-/run/beamOn 100000
+/run/beamOn 4000000
 
 /gps/particle mu+
-/run/beamOn 100000
+/run/beamOn 4000000
 
 # Run 2: Scintillator 1 displaced by 15 cm along Y
 /detector/scint1YOffset 15 cm
 /run/reinitializeGeometry
 /gps/particle mu-
-/run/beamOn 100000
+/run/beamOn 4000000
 
 /gps/particle mu+
-/run/beamOn 100000
+/run/beamOn 4000000
 
 # Run 3: Scintillator 1 displaced by 30 cm along Y
 /detector/scint1YOffset 30 cm
 /run/reinitializeGeometry
 /gps/particle mu-
-/run/beamOn 100000
+/run/beamOn 4000000
 
 /gps/particle mu+
-/run/beamOn 100000
+/run/beamOn 4000000
 
 # Run 4: Scintillator 1 displaced by 45 cm along Y
 /detector/scint1YOffset 45 cm
 /run/reinitializeGeometry
 /gps/particle mu-
-/run/beamOn 100000
+/run/beamOn 4000000
 
 /gps/particle mu+
-/run/beamOn 100000
+/run/beamOn 4000000
 
 # Run 5: Scintillator 1 displaced by 45 cm along Y
 /detector/scint1YOffset 60 cm
 /run/reinitializeGeometry
 /gps/particle mu-
-/run/beamOn 1000000
+/run/beamOn 4000000
 
 /gps/particle mu+
-/run/beamOn 1000000
+/run/beamOn 4000000

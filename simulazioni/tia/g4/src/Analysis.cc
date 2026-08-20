@@ -33,7 +33,7 @@ void Analysis::PrepareNewRun(const G4Run* aRun)
     thisRunNumHits = 0;
 
     // Open file streaming
-    G4String filename = "../results/gmp/cos/" + std::to_string(aRun->GetRunID()) + ".csv";
+    G4String filename = "../results/mgp/cos/" + std::to_string(aRun->GetRunID()) + ".csv";
     csvFile.open(filename);
     csvFileValid = csvFile.is_open();
     
