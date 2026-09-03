@@ -81,7 +81,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
 G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
     // Define dimensions
-    sizex_scint = (80 - 0.0012) * cm;
+    sizex_scint = (75 - 0.0012) * cm; //modifica 75cm invece che 80cm
     sizey_scint = (30 - 0.0012) * cm;
     sizez_scint = (3 - 0.0012) * cm;
     sizex_scint_m = (80 - 0.0012) * cm;
