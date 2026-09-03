@@ -14,7 +14,7 @@ import numpy as np
 
 DEFAULT_ROOTS = (
     # Path(__file__).parent / "results" / "gmp",
-    Path(__file__).parent / "results" / "mgp",
+    Path(__file__).parent / "results" / "mgp" / "75cm",
 )
 CHUNK_SIZE = 10_000
 
