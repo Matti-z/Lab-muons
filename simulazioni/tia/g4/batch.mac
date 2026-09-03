@@ -5,7 +5,7 @@
 /control/verbose 1
 /run/verbose 1
 #
- 
+
 # Run 1: Scintillator 1 at baseline (no offset)
 /detector/scint1YOffset 0 cm
 /run/reinitializeGeometry
@@ -15,8 +15,26 @@
 /gps/particle mu+
 /run/beamOn 4000000
 
+# Run 2: Scintillator 1 displaced by 17.5 cm along Y
+/detector/scint1YOffset 17.5 cm
+/run/reinitializeGeometry
+/gps/particle mu-
+/run/beamOn 4000000
 
-# Run 3: Scintillator 1 displaced by 30 cm along Y
+/gps/particle mu+
+/run/beamOn 4000000
+
+# Run 3: Scintillator 1 displaced by 32.5 cm along Y
+/detector/scint1YOffset 32.5 cm
+/run/reinitializeGeometry
+/gps/particle mu-
+/run/beamOn 4000000
+
+/gps/particle mu+
+/run/beamOn 4000000
+
+
+# Run 4: Scintillator 1 displaced by 47.5 cm along Y
 /detector/scint1YOffset 47.5 cm
 /run/reinitializeGeometry
 /gps/particle mu-
@@ -25,7 +43,7 @@
 /gps/particle mu+
 /run/beamOn 4000000
 
-# Run 3: Scintillator 1 displaced by 30 cm along Y
+# Run 5: Scintillator 1 displaced by 62.5 cm along Y
 /detector/scint1YOffset 62.5 cm
 /run/reinitializeGeometry
 /gps/particle mu-
