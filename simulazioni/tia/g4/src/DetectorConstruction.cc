@@ -46,7 +46,7 @@ void DetectorConstruction::ComputeParameters(){
     halfWrldLength = 2 * m;
 
     posFirstScintillator = G4ThreeVector(0., scint1_YOffset, 0.);
-    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (8.4+(3/2))* cm); //25.3 se gmp, 8.4 se mgp
+    posSecondScintillator = G4ThreeVector(0., scint2_YOffset, (25.3+(3/2))* cm); //25.3 se gmp, 8.4 se mgp
     posThirdScintillator = G4ThreeVector(0., scint3_YOffset, (12.8+(3/2))* cm);
 }
 
@@ -81,12 +81,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct(){
 
 G4VPhysicalVolume* DetectorConstruction::ConstructScintillator(){
     // Define dimensions
-    sizex_scint = (75 - 0.0012) * cm; //modifica 75cm invece che 80cm
-    sizey_scint = (30 - 0.0012) * cm;
-    sizez_scint = (3 - 0.0012) * cm;
-    sizex_scint_m = (80 - 0.0012) * cm;
-    sizey_scint_m = (30 - 0.0012) * cm;
-    sizez_scint_m = (2 - 0.0012) * cm;
+    sizex_scint = (75 - 0.182) * cm; //modifica 75cm invece che 80cm
+    sizey_scint = (30 - 0.182) * cm;
+    sizez_scint = (3 - 0.182) * cm;
+    sizex_scint_m = (80 - 0.182) * cm;
+    sizey_scint_m = (30 - 0.182) * cm;
+    sizez_scint_m = (1 - 0.182) * cm;
     
     G4double halfScintSizeX = sizex_scint / 2.;
     G4double halfScintSizeY = sizey_scint / 2.;
