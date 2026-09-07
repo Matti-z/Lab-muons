@@ -280,7 +280,7 @@ class plots:
 
 if __name__ == "__main__":
 
-    from library import dataset_analysis, end
+    from simulazioni.tia.analisi.library import dataset_analysis, end
 
     def normalization( model, min_dataset: int , max_dataset:int) -> float:
         cdf_diff = model.cdf(max_dataset) - model.cdf(min_dataset)
