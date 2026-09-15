@@ -6,6 +6,9 @@ from iminuit import Minuit
 from iminuit.cost import ExtendedBinnedNLL
 from IPython.display import display
 import pandas as pd
+from matplotlib.ticker import FuncFormatter
+
+
 
 
 N = 19944
@@ -205,7 +208,7 @@ if __name__ == "__main__":
 
     print('p_value =', 1 - chi2.cdf(c_old.fmin.fval, c_old.ndof))
 
-    plt.hist(old, bins=n_bins, alpha=0.5, label='Data', color='gray', edgecolor='black')
+    plt.hist(old, bins=n_bins, alpha=0.5, label='Data')
     x_old = np.linspace(edges_old[0], edges_old[-1], 1000)
     y_old = np.diff(edges_old)[0] * complete_pdf(
         x_old,
@@ -218,10 +221,11 @@ if __name__ == "__main__":
         c_old.values['A'],
     )
     plt.plot(x_old, y_old, label=f'Fit', color='green', linewidth=2)
+    plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, p: f'{x*1e6:.3f}'))
     plt.legend()
-    plt.xlabel('Time (s)')
-    plt.ylabel('Counts')
-    plt.title('2')
+    plt.xlabel('Time [$\mu s$]')
+    plt.ylabel('Counts')    
+    plt.savefig("minerva_timestamp.pdf", format = "pdf")
     plt.show()
 
 
